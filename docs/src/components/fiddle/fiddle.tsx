@@ -1,77 +1,49 @@
-import { component$, Host, $, useHostElement, useScopedStyles$ } from '@builder.io/qwik';
-import { usePage, usePageIndex } from '@builder.io/qwest';
-import { CloseIcon } from '../svgs/close-icon';
+import { component$, Host, $, useScopedStyles$, useStore } from '@builder.io/qwik';
 import styles from './fiddle.css?inline';
 
 export interface FiddleProps {
-  input: FiddleFile[];
+  inputs: FiddleFile[];
 }
 
 export interface FiddleFile {
   code: string;
   path: string;
+  isSelected?: boolean;
 }
 
-export const Fiddle = component$(
-  (props: FiddleProps) => {
-    useScopedStyles$(styles);
+export interface FiddleStore {
+  inputs: FiddleFile[];
+  selectedOutputPanel: 'result' | 'js' | 'html';
+}
 
-    return $(async () => {
-      const hostElm = useHostElement();
-      const page = (await usePage(hostElm))!;
-      const navIndex = usePageIndex(hostElm);
+export const Fiddle = component$((props: FiddleProps) => {
+  useScopedStyles$(styles);
 
-      return (
-        <Host class="sidebar">
-          <nav class="breadcrumbs">
-            <button onClick$={() => (props.store.sideMenuOpen = !props.store.sideMenuOpen)}>
-              <span class="sr-only">Navigation</span>
-              <svg width="24" height="24">
-                <path
-                  d="M5 6h14M5 12h14M5 18h14"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </button>
-            <ol>
-              {page.breadcrumbs.map((b) => (
-                <li>{b.text}</li>
-              ))}
-            </ol>
-          </nav>
-          <nav class="menu">
-            <button
-              class="menu-close lg:hidden"
-              onClick$={() => (props.store.sideMenuOpen = !props.store.sideMenuOpen)}
-            >
-              <CloseIcon width={24} height={24} />
-            </button>
-            {navIndex
-              ? navIndex.items?.map((item) => (
-                  <>
-                    <h5>{item.text}</h5>
-                    <ul>
-                      {item.items?.map((item) => (
-                        <li>
-                          <a
-                            href={item.href}
-                            class={{ 'is-active': page.url.pathname === item.href }}
-                          >
-                            {item.text}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ))
-              : null}
-          </nav>
-        </Host>
-      );
-    });
-  },
-  { tagName: 'aside' }
-);
+  const store = useStore<FiddleStore>({
+    inputs: props.inputs || [],
+    selectedOutputPanel: 'result',
+  });
+
+  return $(() => {
+    return (
+      <Host class="fiddle">
+        <div>
+          Input:
+          {store.inputs.map((input) => (
+            <div hidden={!input.isSelected}>
+              <div>File: {input.path}</div>
+              <div>
+                <textarea onInput$={(ev) => {}} value={input.code} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div>
+          Output:
+          <textarea value={props.code} />
+        </div>
+      </Host>
+    );
+  });
+});
