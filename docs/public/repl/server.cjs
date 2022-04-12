@@ -1,19 +1,11 @@
 globalThis.qwikServer = (function (module) {
 
-  if (typeof require !== 'function' && typeof self !== 'undefined' && typeof location !== 'undefined' && typeof navigator !== 'undefined' && typeof XMLHttpRequest === 'function' && typeof WorkerGlobalScope === 'function' && typeof self.importScripts === 'function') {
+  if (typeof require !== 'function' && typeof self !== 'undefined' && typeof location !== 'undefined' && typeof navigator !== 'undefined' && typeof WorkerGlobalScope === 'function' && typeof self.importScripts === 'function') {
     // shim cjs require() for core.cjs within web worker env
-    // using sync xhr since service workers cannot use importScripts() and a require() cannot be async so we can't use fetch()
     self.require = function(path) {
       if (path === './core.cjs') { 
         if (!self.qwikCore) {
-          const cdnUrl = '/repl/core.cjs';
-          const xhr = new XMLHttpRequest();
-          xhr.open('GET', cdnUrl, false);
-          xhr.send();
-          const mod = { exports: {} };
-          const exec = new Function(mod, mod.exports, xhr.responseText);
-          exec(mod, mod.exports);
-          self.qwikCore = mod.exports;
+          throw new Error('Qwik Core global, "globalThis.qwikCore", must already be loaded for the Qwik Server to be used within a web worker or service worker.');
         }
         return self.qwikCore;
       }
@@ -175,8 +167,8 @@ var BASE_URI = `http://document.qwik.dev/`;
 var noop = () => {
 };
 var versions = {
-  qwik: '0.0.18-7-dev20220408224756',
-  qwikDom: '2.1.14',
+  qwik: "0.0.18-7-dev20220408224756",
+  qwikDom: "2.1.14"
 };
 
 // src/server/document.ts
