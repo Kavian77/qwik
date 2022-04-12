@@ -17,5 +17,5 @@
     },
     "types": ["vite/client", "@cloudflare/workers-types"]
   },
-  "include": ["src", "functions", "qwest"]
+  "include": ["src", "functions", "qwest", "pages/tutorial/menu.tsx"]
 }

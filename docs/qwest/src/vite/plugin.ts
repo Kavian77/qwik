@@ -19,7 +19,7 @@ export function qwest(options: PluginOptions) {
   let inlinedModules = false;
 
   const plugin: Plugin = {
-    name: 'vite-plugin-qwest',
+    name: 'qwest-vite-plugin',
 
     config(userConfig) {
       inlinedModules = !!userConfig.build?.ssr;
@@ -89,7 +89,7 @@ export function qwest(options: PluginOptions) {
             this.emitFile({
               type: 'chunk',
               id: p.filePath,
-              fileName: getPagesBuildPath(p),
+              fileName: getPagesBuildPath(p.pathname),
               preserveSignature: 'allow-extension',
             });
           });

@@ -43,6 +43,11 @@ export const Header = component$(
           </button>
           <ul className="md:grow md:flex md:justify-end md:p-4 bg-gray-900">
             <li>
+              <a href="/tutorial/introduction/basics" onClickQrl={closeMenu}>
+                <span>Tutorial</span>
+              </a>
+            </li>
+            <li>
               <a href="/guide/overview" onClickQrl={closeMenu}>
                 <span>Guide</span>
               </a>
