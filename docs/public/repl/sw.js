@@ -36,26 +36,41 @@ const sendMessageToIframe = async (msg) => {
 
 const loadQwikModules = async (version) => {
   if (
+    !self.qwikCore ||
     !self.qwikOptimizer ||
     !self.qwikServer ||
+    self.qwikCore.version !== version ||
     self.qwikOptimizer.versions.qwik !== version ||
     self.qwikServer.versions.qwik !== version
   ) {
+    self.qwikCore = self.qwikOptimizer = self.qwikServer = null;
+
     // https://cdn.jsdelivr.net/npm/@builder.io/qwik@${version}/optimizer.cjs
+    const coreUrl = `/repl/core.cjs`;
     const optimizerUrl = `/repl/optimizer.cjs`;
     const serverUrl = `/repl/server.cjs`;
 
     // cannot use importScripts() at this point in a service worker (too late)
-    const [optimizerRsp, serverRsp] = await Promise.all([fetch(optimizerUrl), fetch(serverUrl)]);
-    const [optimizerCode, serverCode] = await Promise.all([optimizerRsp.text(), serverRsp.text()]);
+    const [coreRsp, optimizerRsp, serverRsp] = await Promise.all([
+      fetch(coreUrl),
+      fetch(optimizerUrl),
+      fetch(serverUrl),
+    ]);
+    const [coreCode, optimizerCode, serverCode] = await Promise.all([
+      coreRsp.text(),
+      optimizerRsp.text(),
+      serverRsp.text(),
+    ]);
 
+    const evalCore = new Function(coreCode);
     const evalOptimizer = new Function(optimizerCode);
     const evalServer = new Function(serverCode);
 
+    evalCore();
     evalOptimizer();
     evalServer();
 
-    console.log(`Loaded Qwik ${self.qwikOptimizer.versions.qwik}`);
+    console.log(`Loaded Qwik ${self.qwikCore.version}`);
   }
 };
 
