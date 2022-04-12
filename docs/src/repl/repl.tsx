@@ -49,7 +49,7 @@ export const Repl = component$(async (props: ReplProps) => {
       }
     };
 
-    const updateIFrame = () => {
+    const updateIFrame = async() => {
       const options: TransformModulesOptions = {
         rootDir: '/internal/project',
         transpile: store.transpile,
@@ -64,36 +64,15 @@ export const Repl = component$(async (props: ReplProps) => {
       const data = {
         type: 'update',
         version: store.optimizerVersion,
-        options: JSON.parse(JSON.stringify(options)),
-      };
-      window.replIframeWindow?.postMessage(data);
+        options: options,
+      }; 
+      const rsp = await   fetch('/repl/~update', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      })
     };
 
     window.addEventListener('message', onMessageFromSw);
-
-    // setTimeout(async () => {
-    //   const module = await importOptimizer;
-    //   window.qwikOptimizer = await module.createOptimizer();
-
-    //   const opts: TransformModulesOptions = {
-    //     rootDir: '/internal/project',
-    //     transpile: store.transpile,
-    //     minify: store.minify,
-    //     entryStrategy: {
-    //       type: store.entryStrategy as any,
-    //     },
-    //     explicityExtensions: true,
-    //     sourceMaps: false,
-    //     input: store.inputs,
-    //   };
-
-    //   const output = await window.qwikOptimizer.transformModules(opts);
-
-    //   store.outputModules = output.modules;
-    //   store.diagnostics = output.diagnostics;
-
-    //   console.log(output);
-    // }, 100);
   }
 
   return (

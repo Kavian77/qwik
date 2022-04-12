@@ -70,33 +70,29 @@ const loadQwikModules = async (version) => {
     evalOptimizer();
     evalServer();
 
-    console.log(`Loaded Qwik ${self.qwikCore.version}`);
+    console.debug(`Loaded @builder.io/qwik ${self.qwikCore.version}`);
   }
 };
 
-self.onfetch = (ev) => {
-  const modules = self.result && self.result.modules;
-  if (!Array.isArray(modules)) {
-    return;
-  }
-
-  const req = ev.request;
-  const reqUrl = new URL(req.url);
+self.onfetch = async (ev) => {
+  const reqUrl = new URL(ev.request.url);
   const pathname = reqUrl.pathname;
 
-  const module = modules.find((m) => {
-    const moduleUrl = new URL('./' + m.path, reqUrl);
-    return pathname === moduleUrl.pathname;
-  });
-
-  if (module) {
-    const rsp = new Response(module.code, {
-      headers: {
-        'Content-Type': 'application/javascript; charset=utf-8',
-        'Cache-Control': 'no-store',
-      },
+  const modules = self.result && self.result.modules;
+  if (Array.isArray(modules)) {
+    const module = modules.find((m) => {
+      const moduleUrl = new URL('./' + m.path, reqUrl);
+      return pathname === moduleUrl.pathname;
     });
-    ev.respondWith(rsp);
+    if (module) { 
+      return ev.respondWith(new Response(module.code, {
+        headers: {
+          'Content-Type': 'application/javascript; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'X-QWIK-REPL': self.qwikCore.version
+        },
+      }));
+    }
   }
 };
 
