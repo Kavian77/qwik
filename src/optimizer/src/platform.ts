@@ -49,6 +49,10 @@ export async function getSystem() {
 }
 
 export const getPlatformInputFiles = async (sys: OptimizerSystem) => {
+  if (typeof sys.getInputFiles === 'function') {
+    return sys.getInputFiles;
+  }
+
   if (isNodeJs()) {
     const fs: typeof import('fs') = await sys.dynamicImport('fs');
 
@@ -149,7 +153,7 @@ export async function loadPlatformBinding(sys: OptimizerSystem) {
 
       for (const rsp of rsps) {
         if (!rsp.ok) {
-          throw new Error(`Unable to load Qwik WASM binding from ${rsp.url}`);
+          throw new Error(`Unable to fetch Qwik WASM binding from ${rsp.url}`);
         }
       }
 

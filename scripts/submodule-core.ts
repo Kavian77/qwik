@@ -4,7 +4,6 @@ import { getBanner, fileSize, readFile, target, watcher, writeFile } from './uti
 import { InputOptions, OutputOptions, rollup } from 'rollup';
 import { join } from 'path';
 import { minify } from 'terser';
-import { readFileSync } from 'fs';
 
 /**
  * Build the core package which is also the root package: @builder.io/qwik

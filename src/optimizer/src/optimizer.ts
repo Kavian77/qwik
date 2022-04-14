@@ -1,4 +1,4 @@
-import { getSystem, loadPlatformBinding, PlatformBinding } from './platform';
+import { getPlatformInputFiles, getSystem, loadPlatformBinding, PlatformBinding } from './platform';
 import type {
   TransformModulesOptions,
   TransformFsOptions,
@@ -24,7 +24,7 @@ export const createOptimizer = async () => {
       return transformFsAsync(sys, binding, opts);
     },
     transformFsSync(opts: TransformFsOptions) {
-      return transformFsSync(sys, binding, opts);
+      return transformFsSync(binding, opts);
     },
     sys,
   };
@@ -39,11 +39,7 @@ const transformModulesSync = (binding: PlatformBinding, opts: TransformModulesOp
   return binding.transform_modules(convertOptions(opts));
 };
 
-const transformFsSync = (
-  sys: OptimizerSystem,
-  binding: PlatformBinding,
-  opts: TransformFsOptions
-) => {
+const transformFsSync = (binding: PlatformBinding, opts: TransformFsOptions) => {
   if (binding.transform_fs) {
     return binding.transform_fs(convertOptions(opts));
   }
@@ -59,8 +55,10 @@ const transformFsAsync = async (
     return binding.transform_fs(convertOptions(fsOpts));
   }
 
-  if (sys.getInputFiles) {
-    const input = await sys.getInputFiles(fsOpts.rootDir);
+  const getInputFiles = await getPlatformInputFiles(sys);
+
+  if (getInputFiles) {
+    const input = await getInputFiles(fsOpts.rootDir);
 
     const modulesOpts: TransformModulesOptions = {
       rootDir: fsOpts.rootDir,

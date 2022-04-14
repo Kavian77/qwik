@@ -237,7 +237,7 @@ export function qwikRollup(opts: QwikPluginOptions): any {
       if (typeof opts.srcDir !== 'string' && !Array.isArray(opts.srcInputs)) {
         throw new Error(`Qwik plugin must have either a "srcDir" or "srcInputs" option.`);
       }
-      if (typeof opts.srcDir == 'string' && Array.isArray(opts.srcInputs)) {
+      if (typeof opts.srcDir === 'string' && Array.isArray(opts.srcInputs)) {
         throw new Error(`Qwik plugin cannot have both the "srcDir" and "srcInputs" options.`);
       }
 
@@ -333,7 +333,6 @@ export function qwikRollup(opts: QwikPluginOptions): any {
             moduleSideEffects: sideEffects,
           };
         }
-
       }
 
       return null;

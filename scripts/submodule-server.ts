@@ -12,7 +12,6 @@ import {
 } from './util';
 import { inlineQwikScriptsEsBuild } from './submodule-qwikloader';
 import { readPackageJson } from './package-json';
-import { readFileSync } from 'fs';
 
 /**
  * Builds @builder.io/server
