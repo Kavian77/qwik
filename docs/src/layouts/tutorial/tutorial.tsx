@@ -32,12 +32,38 @@ const Tutorial = component$(async (props: TutorialLayoutProps) => {
 
   const replInputs: TransformModuleInput[] = [
     {
-      path: `main.tsx`,
-      code: `console.log('main fu', Date.now());`,
+      path: `/main.tsx`,
+      code: `
+import { component$ } from '@builder.io/qwik';
+
+export const Main = component$(() => {
+  return (
+    <div>Hello World</div>
+  );
+});
+      `.trim(),
     },
     {
-      path: `index.html`,
-      code: `<html><body>fu</body></html>`,
+      path: `/entry.server.tsx`,
+      code: `
+import { renderToString, RenderToStringOptions, QwikLoader } from '@builder.io/qwik/server';
+import { Main } from './main';
+
+export function render(opts: RenderToStringOptions) {
+  return renderToString(
+    <html>
+      <head>
+        <Head />
+      </head>
+      <body>
+        <Main />
+        <QwikLoader />
+      </body>
+    </html>,
+    opts
+  );
+}
+      `.trim(),
     },
   ];
 

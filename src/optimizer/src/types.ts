@@ -22,7 +22,27 @@ export interface Optimizer {
    */
   transformFsSync(opts: TransformFsOptions): TransformOutput;
 
+  /**
+   * Optimizer system use. This can be updated with a custom file system.
+   */
+  sys: OptimizerSystem;
+}
+
+/**
+ * @alpha
+ */
+export interface OptimizerSystem {
+  dynamicImport: (path: string) => Promise<any>;
+  getInputFiles?: (rootDir: string) => Promise<TransformModuleInput[]>;
   path: Path;
+}
+
+/**
+ * @alpha
+ */
+export interface OptimizerSystemStats {
+  isFile: boolean;
+  isDirectory: boolean;
 }
 
 // OPTIONS ***************

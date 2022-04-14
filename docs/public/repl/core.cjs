@@ -1,3 +1,10 @@
+/**
+ * @license
+ * @builder.io/qwik
+ * Copyright Builder.io, Inc. All Rights Reserved.
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://github.com/BuilderIO/qwik/blob/main/LICENSE
+ */
 'use strict';
 
 if (typeof globalThis == 'undefined') {
@@ -3691,7 +3698,7 @@ const Slot = (props) => {
 /**
  * @alpha
  */
-const version = "0.0.18-7-dev20220412191925";
+const version = "0.0.18-7-dev20220408224756";
 
 /**
  * Render JSX.

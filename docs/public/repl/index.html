@@ -1,70 +1,31 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" />
-    <title>Qwik Repl Result App</title>
-    <script type="module">
+    <meta charset="utf-8" data-repl />
+    <script type="module" data-repl>
       const init = () => {
-        for (let i = 0; i < document.head.children.length; i++) {
-          document.head.children[i].setAttribute('data-repl', '');
-        }
-
-        const updateAppHtml = (html) => {
-          emptyDocument();
-
-          const div = document.createElement('div');
-          html = html.replace(/\<html/gi, '<tmp-html');
-          html = html.replace(/\<\/html/gi, '</tmp-html');
-          html = html.replace(/\<head/gi, '<tmp-head');
-          html = html.replace(/\<\/head/gi, '</tmp-head');
-          html = html.replace(/\<body/gi, '<tmp-body');
-          html = html.replace(/\<\/body/gi, '</tmp-body');
-          div.innerHTML = html;
-
-          const updatedDocElement = div.querySelector('tmp-html');
-          if (updatedDocElement) {
-            cloneAttributes(updatedDocElement, document.documentElement);
-          }
-
-          const updatedHead = div.querySelector('tmp-head');
-          if (updatedHead) {
-            cloneAttributes(updatedHead, document.head);
-            cloneNodes(updatedHead, document.head);
-          }
-
-          const updateBody = div.querySelector('tmp-body');
-          if (updateBody) {
-            cloneAttributes(updateBody, document.body);
-            cloneNodes(updateBody, document.body);
+        const updateAppOutput = (result) => {
+          resetDocument();
+          setAttributes(document.documentElement, result.docElementAttributes);
+          setAttributes(document.head, result.headAttributes);
+          setAttributes(document.body, result.bodyAttributes);
+          document.body.innerHTML = result.bodyInnerHtml;
+          for (const elmData of result.headElements) {
+            const elm = document.createElement(elmData.tagName);
+            setAttributes(elm, elmData.attributes);
+            document.head.appendChild(elm);
           }
         };
 
-        const emptyDocument = () => {
+        const resetDocument = () => {
           for (let i = document.head.children.length - 1; i >= 0; i--) {
             if (!document.head.children[i].hasAttribute('data-repl')) {
               document.head.remove(document.head.children[i]);
             }
           }
-
           removeAttributes(document.documentElement);
           removeAttributes(document.head);
           removeAttributes(document.body);
-
-          document.body.innerHTML = '';
-        };
-
-        const cloneNodes = (src, dest) => {
-          for (let i = 0; i < src.childNodes.length; i++) {
-            const srcNode = src.childNodes[i];
-            if (srcNode.nodeName === 'SCRIPT') {
-              const scriptElm = document.createElement('script');
-              scriptElm.innerHTML = srcNode.innerHTML;
-              cloneAttributes(srcNode, scriptElm);
-              dest.appendChild(scriptElm);
-            } else {
-              dest.appendChild(srcNode.cloneNode());
-            }
-          }
         };
 
         const removeAttributes = (elm) => {
@@ -73,32 +34,33 @@
           }
         };
 
-        const cloneAttributes = (src, dest) => {
-          for (let i = 0; i < src.attributes.length; i++) {
-            dest.setAttribute(src.attributes[i].nodeName, src.attributes[i].nodeValue);
+        const setAttributes = (elm, attrs) => {
+          for (const attrName in attrs) {
+            elm.setAttribute(attrName, attrs[attrName]);
           }
         };
 
-        const updateApp = (data) => {
-          updateAppHtml(data.html);
-        };
-
         const receiveMessageFromSw = (ev) => {
-          const evData = ev.data;
-          const evType = evData && evData.type;
-          if (evType === 'result') {
-            updateApp(evData);
+          if (ev.data.type === 'result') {
+            updateAppOutput(ev.data);
+            sendMessageToMain(ev.data);
           }
         };
 
         let swRegistration = null;
-        window.addEventListener('message', (ev) => {
+        const receiveMessageFromMainApp = (ev) => {
           if (swRegistration.active) {
-            const evData = ev.data || {};
+            const evData = JSON.parse(ev.data);
             evData.location = location.href;
             swRegistration.active.postMessage(evData);
           }
-        });
+        };
+
+        const sendMessageToMain = (msg) => {
+          window.parent.postMessage(msg, '*');
+        };
+
+        window.addEventListener('message', receiveMessageFromMainApp);
 
         navigator.serviceWorker
           .register('/repl/sw.js', {
@@ -109,12 +71,12 @@
               swRegistration = reg;
               if (swRegistration.active) {
                 navigator.serviceWorker.addEventListener('message', receiveMessageFromSw);
-                window.parent.postMessage({ type: 'resultAppReady' }, '*');
+                sendMessageToMain({ type: 'qwikReplReady' });
               } else if (swRegistration.installing) {
                 swRegistration.installing.addEventListener('statechange', (ev) => {
                   if (ev.target.state == 'activated') {
                     navigator.serviceWorker.addEventListener('message', receiveMessageFromSw);
-                    window.parent.postMessage({ type: 'resultAppReady' }, '*');
+                    sendMessageToMain({ type: 'qwikReplReady' });
                   }
                 });
               }

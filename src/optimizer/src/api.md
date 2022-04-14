@@ -99,12 +99,29 @@ export type MinifyOption = boolean | undefined | null;
 
 // @alpha (undocumented)
 export interface Optimizer {
-    // (undocumented)
-    path: Path;
+    sys: OptimizerSystem;
     transformFs(opts: TransformFsOptions): Promise<TransformOutput>;
     transformFsSync(opts: TransformFsOptions): TransformOutput;
     transformModules(opts: TransformModulesOptions): Promise<TransformOutput>;
     transformModulesSync(opts: TransformModulesOptions): TransformOutput;
+}
+
+// @alpha (undocumented)
+export interface OptimizerSystem {
+    // (undocumented)
+    dynamicImport: (path: string) => Promise<any>;
+    // (undocumented)
+    getInputFiles?: (rootDir: string) => Promise<TransformModuleInput[]>;
+    // (undocumented)
+    path: Path;
+}
+
+// @alpha (undocumented)
+export interface OptimizerSystemStats {
+    // (undocumented)
+    isDirectory: boolean;
+    // (undocumented)
+    isFile: boolean;
 }
 
 // @alpha (undocumented)
@@ -174,7 +191,9 @@ export interface QwikPluginOptions {
     // (undocumented)
     minify?: MinifyMode;
     // (undocumented)
-    srcDir: string;
+    srcDir?: string;
+    // (undocumented)
+    srcInputs?: TransformModuleInput[];
     // (undocumented)
     ssrBuild?: boolean;
     // (undocumented)
