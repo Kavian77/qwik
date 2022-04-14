@@ -39,11 +39,10 @@ export async function submoduleServer(config: BuildConfig) {
   const esm = build({
     ...opts,
     format: 'esm',
-    banner: { js: getBanner('@builder.io/qwik/server') },
+    banner: { js: getBanner('@builder.io/qwik/server') + injectGlobalPoly() },
     outExtension: { '.js': '.mjs' },
     plugins: [importPath(/^@builder\.io\/qwik$/, './core.mjs'), qwikDomPlugin],
     watch: watcher(config, submodule),
-    inject: [injectGlobalPoly(config)],
     define: {
       ...(await inlineQwikScriptsEsBuild(config)),
       'globalThis.IS_CJS': 'false',
@@ -55,8 +54,8 @@ export async function submoduleServer(config: BuildConfig) {
 
   const cjsBanner = [
     getBanner('@builder.io/qwik/server'),
-    readFileSync(injectGlobalThisPoly(config), 'utf-8'),
-    readFileSync(injectGlobalPoly(config), 'utf-8'),
+    injectGlobalThisPoly(),
+    injectGlobalPoly(),
     `globalThis.qwikServer = (function (module) {`,
     browserCjsRequireShim,
   ].join('\n');

@@ -5,24 +5,28 @@ const update = async (version, options) => {
 
   const result = {
     type: 'result',
-    transformModules: [],
-    bundleModules: [],
+    outputHtml: '',
+    clientModules: [],
+    serverModules: [],
     diagnostics: [],
     docElementAttributes: {},
     headAttributes: {},
     headElements: [],
     bodyAttributes: {},
     bodyInnerHtml: '',
-    outputHtml: '',
   };
 
   try {
     await loadDependencies(version, options);
 
-    result.bundleModules = await bundleApp(options, result.diagnostics, '/main.tsx', 'client');
+    result.clientModules = await bundleApp(options, result.diagnostics, '/main.tsx', 'client');
 
-    result.bundleModules = await bundleApp(options, result.diagnostics, '/entry.server.tsx', 'server');
-    
+    result.serverModules = await bundleApp(
+      options,
+      result.diagnostics,
+      '/entry.server.tsx',
+      'server'
+    );
   } catch (e) {
     result.diagnostics.push({
       message: String(e),
@@ -38,15 +42,17 @@ const update = async (version, options) => {
   console.timeEnd('Update');
 };
 
-const bundleApp =async (options, diagnostics, inputPath, buildType) => {
+const bundleApp = async (options, diagnostics, inputPath, buildType) => {
   console.time(`Bundle ${buildType}`);
-  
+
+  const isSsr = buildType === 'server';
+
   const qwikRollupPluginOpts = {
     srcInputs: options.srcInputs,
     entryStrategy: options.entryStrategy,
     minify: options.minify,
     debug: options.debug,
-    ssrBuild: options.ssrBuild,
+    ssrBuild: isSsr,
   };
 
   const rollupInputOpts = {
@@ -61,7 +67,18 @@ const bundleApp =async (options, diagnostics, inputPath, buildType) => {
           }
 
           if (importee === '@builder.io/qwik' || importee === '@builder.io/qwik/jsx-runtime') {
-            return '\0@qwik-core';
+            // return '\0@qwik-core';
+            return {
+              id: `/repl/core.mjs`,
+              external: true,
+            };
+          }
+
+          if (importee === '@builder.io/qwik/server') {
+            return {
+              id: `/repl/server.mjs`,
+              external: true,
+            };
           }
 
           return {
@@ -72,6 +89,9 @@ const bundleApp =async (options, diagnostics, inputPath, buildType) => {
         load(id) {
           if (id === '\0@qwik-core') {
             return self.coreEsmCode;
+          }
+          if (id === '\0@qwik-server') {
+            return self.serverEsmCode;
           }
           return null;
         },
@@ -84,6 +104,7 @@ const bundleApp =async (options, diagnostics, inputPath, buildType) => {
 
   const rollupOutputOpts = {
     format: 'es',
+    inlineDynamicImports: isSsr,
   };
 
   const bundle = await self.rollup.rollup(rollupInputOpts);
@@ -101,7 +122,7 @@ const bundleApp =async (options, diagnostics, inputPath, buildType) => {
   console.timeEnd(`Bundle ${buildType}`);
 
   return outputs;
-}
+};
 
 const receiveMessageFromIframe = (ev) => {
   if (ev.data.type === 'update') {
@@ -118,26 +139,23 @@ const loadDependencies = async (version, options) => {
   if (
     !self.qwikCore ||
     !self.qwikOptimizer ||
-    !self.qwikServer ||
     !self.rollup ||
     !self.coreEsmCode ||
     self.qwikCore.version !== version ||
-    self.qwikOptimizer.versions.qwik !== version ||
-    self.qwikServer.versions.qwik !== version
+    self.qwikOptimizer.versions.qwik !== version
   ) {
     console.time('Load dependencies');
-    self.qwikCore = self.qwikOptimizer = self.qwikServer = null;
+    self.qwikCore = self.qwikOptimizer = null;
     self.coreEsmCode = null;
     self.rollup = null;
 
     const coreCjsUrl = `/repl/core.cjs`;
-    const optimizerUrl = `/repl/optimizer.cjs`;
-    const serverUrl = `/repl/server.cjs`;
+    const coreEsmUrl = `/repl/core.mjs`;
+    const optimizerCjsUrl = `/repl/optimizer.cjs`;
+    const serverEsmUrl = `/repl/server.mjs`;
     const rollupUrl = getNpmCdnUrl('rollup', rollupVersion, '/dist/rollup.browser.js');
-    const coreEsmUrl = getNpmCdnUrl('@builder.io/qwik', version, '/core.mjs');
 
-    // cannot use importScripts() at this point in a service worker (too late)
-    const depUrls = [coreCjsUrl, optimizerUrl, serverUrl, rollupUrl, coreEsmUrl];
+    const depUrls = [coreCjsUrl, coreEsmUrl, optimizerCjsUrl, serverEsmUrl, rollupUrl];
 
     const rsps = await Promise.all(depUrls.map((u) => fetch(u)));
 
@@ -147,23 +165,20 @@ const loadDependencies = async (version, options) => {
       }
     });
 
-    const [coreCode, optimizerCode, serverCode, rollupCode, coreEsmCode] = await Promise.all(
-      rsps.map((rsp) => rsp.text())
-    );
+    const [coreCjsCode, coreEsmCode, optimizerCjsCode, serverEsmCode, rollupCode] =
+      await Promise.all(rsps.map((rsp) => rsp.text()));
 
     self.coreEsmCode = coreEsmCode;
+    self.serverEsmCode = serverEsmCode;
 
-    const coreApply = new Function(coreCode);
-    const optimizerApply = new Function(optimizerCode);
-    const serverApply = new Function(serverCode);
+    const coreApply = new Function(coreCjsCode);
+    const optimizerApply = new Function(optimizerCjsCode);
     const rollupApply = new Function(rollupCode);
 
     coreApply();
     console.debug(`Loaded @builder.io/qwik: ${self.qwikCore.version}`);
     optimizerApply();
     console.debug(`Loaded @builder.io/qwik/optimizer: ${self.qwikOptimizer.versions.qwik}`);
-    serverApply();
-    console.debug(`Loaded @builder.io/qwik/server: ${self.qwikServer.versions.qwik}`);
     rollupApply();
     console.debug(`Loaded rollup: ${self.rollup.VERSION}`);
     console.timeEnd('Load dependencies');

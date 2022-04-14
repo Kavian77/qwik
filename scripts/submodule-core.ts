@@ -56,7 +56,7 @@ async function submoduleCoreProd(config: BuildConfig) {
      * Quick and dirty polyfill so globalThis is a global (really only needed for cjs and Node10)
      * and globalThis is only needed so globalThis.qDev can be set, and for dev dead code removal
      */
-    readFileSync(injectGlobalThisPoly(config), 'utf-8'),
+    injectGlobalThisPoly(),
     `globalThis.qwikCore = (function (exports) {`,
   ].join('');
 
@@ -149,7 +149,9 @@ async function submoduleCoreDev(config: BuildConfig) {
     format: 'cjs',
     outExtension: { '.js': '.cjs' },
     watch: watcher(config),
-    inject: [injectGlobalThisPoly(config)],
+    banner: {
+      js: injectGlobalThisPoly(),
+    },
   });
 
   await Promise.all([esm, cjs]);

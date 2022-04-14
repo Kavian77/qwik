@@ -14,18 +14,18 @@ export const Repl = component$(async (props: ReplProps) => {
 
   const store = useStore<ReplStore>({
     inputs: props.inputs || [],
-    transformModules: [],
-    bundleModules: [],
+    outputHtml: '',
+    clientModules: [],
+    serverModules: [],
     diagnostics: [],
     selectedInputPath: '',
     selectedOutputPanel: 'app',
-    selectedTransformModule: '',
-    selectedBundleModule: '',
+    selectedClientModule: '',
+    selectedServerModule: '',
     version: '0.0.18-7-dev20220408224756',
     minify: 'none',
     entryStrategy: 'single',
     iframeUrl: '',
-    outputHtml: '',
     ssrBuild: true,
     debug: false
   });
@@ -71,23 +71,23 @@ export const Repl = component$(async (props: ReplProps) => {
 
     const updateReplState = (result: ReplResult) => {
       store.outputHtml = result.outputHtml;
-      store.transformModules = result.transformModules;
-      store.bundleModules = result.bundleModules;
+      store.clientModules = result.clientModules;
+      store.serverModules = result.serverModules;
       store.diagnostics = result.diagnostics;
 
-      if (!result.transformModules.some((m) => m.path === store.selectedTransformModule)) {
-        if (result.transformModules.length > 0) {
-          store.selectedTransformModule = result.transformModules[0].path;
+      if (!result.clientModules.some((m) => m.path === store.selectedClientModule)) {
+        if (result.clientModules.length > 0) {
+          store.selectedClientModule = result.clientModules[0].path;
         } else {
-          store.selectedTransformModule = '';
+          store.selectedClientModule = '';
         }
       }
 
-      if (!result.bundleModules.some((m) => m.path === store.selectedBundleModule)) {
-        if (result.bundleModules.length > 0) {
-          store.selectedBundleModule = result.bundleModules[0].path;
+      if (!result.serverModules.some((m) => m.path === store.selectedServerModule)) {
+        if (result.serverModules.length > 0) {
+          store.selectedServerModule = result.serverModules[0].path;
         } else {
-          store.selectedBundleModule = '';
+          store.selectedServerModule = '';
         }
       }
 
@@ -170,25 +170,25 @@ export const Repl = component$(async (props: ReplProps) => {
         </div>
         <div
           class={{
-            'active-tab': store.selectedOutputPanel === 'transformModules',
+            'active-tab': store.selectedOutputPanel === 'clientModules',
             'repl-tab': true,
           }}
         >
           <button
             class="repl-tab-select"
-            onClick$={() => (store.selectedOutputPanel = 'transformModules')}
+            onClick$={() => (store.selectedOutputPanel = 'clientModules')}
           >
-            Modules
+            Client Modules
           </button>
         </div>
         <div
-          class={{ 'active-tab': store.selectedOutputPanel === 'bundleModules', 'repl-tab': true }}
+          class={{ 'active-tab': store.selectedOutputPanel === 'serverModules', 'repl-tab': true }}
         >
           <button
             class="repl-tab-select"
-            onClick$={() => (store.selectedOutputPanel = 'bundleModules')}
+            onClick$={() => (store.selectedOutputPanel = 'serverModules')}
           >
-            Bundles
+            Server Modules
           </button>
         </div>
         <div
@@ -228,52 +228,52 @@ export const Repl = component$(async (props: ReplProps) => {
         </div>
         <div
           class={{
-            'active-output': store.selectedOutputPanel === 'transformModules',
+            'active-output': store.selectedOutputPanel === 'clientModules',
             'output-result': true,
           }}
         >
-          {store.selectedOutputPanel === 'transformModules' ? (
+          {store.selectedOutputPanel === 'clientModules' ? (
             <>
               <select
-                hidden={store.transformModules.length === 0}
+                hidden={store.clientModules.length === 0}
                 onChange$={(_, elm: any) => {
-                  store.selectedTransformModule = elm.value;
+                  store.selectedClientModule = elm.value;
                 }}
               >
-                {store.transformModules.map((m) => (
-                  <option selected={m.path === store.selectedTransformModule} value={m.path}>
+                {store.clientModules.map((m) => (
+                  <option selected={m.path === store.selectedClientModule} value={m.path}>
                     {m.path}
                   </option>
                 ))}
               </select>
-              {store.transformModules.map((m) =>
-                m.path === store.selectedTransformModule ? <pre>{m.code}</pre> : null
+              {store.clientModules.map((m) =>
+                m.path === store.selectedClientModule ? <pre>{m.code}</pre> : null
               )}
             </>
           ) : null}
         </div>
         <div
           class={{
-            'active-output': store.selectedOutputPanel === 'bundleModules',
+            'active-output': store.selectedOutputPanel === 'serverModules',
             'output-result': true,
           }}
         >
-          {store.selectedOutputPanel === 'bundleModules' ? (
+          {store.selectedOutputPanel === 'serverModules' ? (
             <>
               <select
-                hidden={store.bundleModules.length === 0}
+                hidden={store.serverModules.length === 0}
                 onChange$={(_, elm: any) => {
-                  store.selectedBundleModule = elm.value;
+                  store.selectedServerModule = elm.value;
                 }}
               >
-                {store.bundleModules.map((m) => (
-                  <option selected={m.path === store.selectedBundleModule} value={m.path}>
+                {store.serverModules.map((m) => (
+                  <option selected={m.path === store.selectedServerModule} value={m.path}>
                     {m.path}
                   </option>
                 ))}
               </select>
-              {store.bundleModules.map((m) =>
-                m.path === store.selectedBundleModule ? <pre>{m.code}</pre> : null
+              {store.serverModules.map((m) =>
+                m.path === store.selectedServerModule ? <pre>{m.code}</pre> : null
               )}
             </>
           ) : null}
@@ -304,13 +304,13 @@ export interface ReplProps {
 export interface ReplStore {
   inputs: TransformModuleInput[];
   outputHtml: string;
-  transformModules: TransformModule[];
-  bundleModules: TransformModule[];
+  clientModules: TransformModule[];
+  serverModules: TransformModule[];
   diagnostics: Diagnostic[];
   selectedInputPath: string;
   selectedOutputPanel: OutputPanel;
-  selectedTransformModule: string;
-  selectedBundleModule: string;
+  selectedClientModule: string;
+  selectedServerModule: string;
   minify: MinifyMode;
   ssrBuild: boolean;
   entryStrategy: string;
@@ -321,8 +321,8 @@ export interface ReplStore {
 interface ReplResult {
   type: 'result';
   outputHtml: string;
-  transformModules: TransformModule[];
-  bundleModules: TransformModule[];
+  clientModules: TransformModule[];
+  serverModules: TransformModule[];
   diagnostics: Diagnostic[];
   docElementAttributes: ReplResultAttributes;
   headAttributes: ReplResultAttributes;
@@ -346,4 +346,4 @@ interface ReplWindow extends Window {
 
 declare const window: ReplWindow;
 
-type OutputPanel = 'app' | 'outputHtml' | 'transformModules' | 'bundleModules' | 'diagnostics';
+type OutputPanel = 'app' | 'outputHtml' | 'clientModules' | 'serverModules' | 'diagnostics';

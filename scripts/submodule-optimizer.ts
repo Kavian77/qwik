@@ -57,7 +57,7 @@ export async function submoduleOptimizer(config: BuildConfig) {
     });
 
     const cjsBanner = [
-      readFileSync(injectGlobalThisPoly(config), 'utf-8'),
+      injectGlobalThisPoly(),
       `globalThis.qwikOptimizer = (function (module) {`,
     ].join('\n');
 
