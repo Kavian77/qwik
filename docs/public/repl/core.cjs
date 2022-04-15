@@ -7,10 +7,12 @@
  */
 'use strict';
 
+
 if (typeof globalThis == 'undefined') {
   const g = 'undefined' != typeof global ? global : 'undefined' != typeof window ? window : 'undefined' != typeof self ? self : {};
   g.globalThis = g;
-}globalThis.qwikCore = (function (exports) {
+}
+globalThis.qwikCore = (function (exports) {
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

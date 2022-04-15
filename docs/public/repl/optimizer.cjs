@@ -531,6 +531,47 @@ globalThis.qwikOptimizer = function(module) {
     isNodeJs() && (sys.path = await sys.dynamicImport("path"));
     return sys;
   }
+  var getPlatformInputFiles = async sys => {
+    if ("function" === typeof sys.getInputFiles) {
+      return sys.getInputFiles;
+    }
+    if (isNodeJs()) {
+      const fs = await sys.dynamicImport("fs");
+      return async rootDir => {
+        const getChildFilePaths = async dir => {
+          const dirItems = await fs.promises.readdir(dir);
+          const files = await Promise.all(dirItems.map((async subdir => {
+            const resolvedPath = sys.path.resolve(dir, subdir);
+            const stats = await fs.promises.stat(resolvedPath);
+            return stats.isDirectory() ? getChildFilePaths(resolvedPath) : [ resolvedPath ];
+          })));
+          const flatted = [];
+          for (const file of files) {
+            flatted.push(...file);
+          }
+          return flatted.filter((a => extensions[sys.path.extname(a)]));
+        };
+        const filePaths = await getChildFilePaths(rootDir);
+        const inputs = (await Promise.all(filePaths.map((async filePath => {
+          const input = {
+            code: await fs.promises.readFile(filePath, "utf8"),
+            path: filePath.slice(rootDir.length + 1)
+          };
+          return input;
+        })))).sort(((a, b) => {
+          if (a.path < b.path) {
+            return -1;
+          }
+          if (a.path > b.path) {
+            return 1;
+          }
+          return 0;
+        }));
+        return inputs;
+      };
+    }
+    return null;
+  };
   async function loadPlatformBinding(sys) {
     if (isNodeJs()) {
       const platform = QWIK_BINDING_MAP[process.platform];
@@ -567,7 +608,7 @@ globalThis.qwikOptimizer = function(module) {
       const rsps = await Promise.all([ fetch(cjsModuleUrl), fetch(wasmUrl) ]);
       for (const rsp of rsps) {
         if (!rsp.ok) {
-          throw new Error(`Unable to load Qwik WASM binding from ${rsp.url}`);
+          throw new Error(`Unable to fetch Qwik WASM binding from ${rsp.url}`);
         }
       }
       const cjsRsp = rsps[0];
@@ -594,6 +635,12 @@ globalThis.qwikOptimizer = function(module) {
   function isWebWorker() {
     return "undefined" !== typeof self && "undefined" !== typeof location && "undefined" !== typeof navigator && "function" === typeof fetch && "function" === typeof WorkerGlobalScope && "function" === typeof self.importScripts;
   }
+  var extensions = {
+    ".js": true,
+    ".ts": true,
+    ".tsx": true,
+    ".jsx": true
+  };
   var createOptimizer = async () => {
     const sys = await getSystem();
     const binding = await loadPlatformBinding(sys);
@@ -601,13 +648,13 @@ globalThis.qwikOptimizer = function(module) {
       transformModules: async opts => transformModulesSync(binding, opts),
       transformModulesSync: opts => transformModulesSync(binding, opts),
       transformFs: async opts => transformFsAsync(sys, binding, opts),
-      transformFsSync: opts => transformFsSync(sys, binding, opts),
+      transformFsSync: opts => transformFsSync(binding, opts),
       sys: sys
     };
     return optimizer;
   };
   var transformModulesSync = (binding, opts) => binding.transform_modules(convertOptions(opts));
-  var transformFsSync = (sys, binding, opts) => {
+  var transformFsSync = (binding, opts) => {
     if (binding.transform_fs) {
       return binding.transform_fs(convertOptions(opts));
     }
@@ -617,8 +664,9 @@ globalThis.qwikOptimizer = function(module) {
     if (binding.transform_fs && !sys.getInputFiles) {
       return binding.transform_fs(convertOptions(fsOpts));
     }
-    if (sys.getInputFiles) {
-      const input = await sys.getInputFiles(fsOpts.rootDir);
+    const getInputFiles = await getPlatformInputFiles(sys);
+    if (getInputFiles) {
+      const input = await getInputFiles(fsOpts.rootDir);
       const modulesOpts = {
         rootDir: fsOpts.rootDir,
         entryStrategy: fsOpts.entryStrategy,
@@ -823,7 +871,7 @@ globalThis.qwikOptimizer = function(module) {
         if ("string" !== typeof opts.srcDir && !Array.isArray(opts.srcInputs)) {
           throw new Error('Qwik plugin must have either a "srcDir" or "srcInputs" option.');
         }
-        if ("string" == typeof opts.srcDir && Array.isArray(opts.srcInputs)) {
+        if ("string" === typeof opts.srcDir && Array.isArray(opts.srcInputs)) {
           throw new Error('Qwik plugin cannot have both the "srcDir" and "srcInputs" options.');
         }
         optimizer || (optimizer = await createOptimizer());

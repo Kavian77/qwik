@@ -56,11 +56,6 @@ export interface QwikLoaderProps {
     events?: string[];
 }
 
-// Warning: (ae-forgotten-export) The symbol "QwikLoaderProps" needs to be exported by the entry point index.d.ts
-//
-// @alpha (undocumented)
-export const QwikLoader: FunctionComponent<QwikLoaderProps>;
-
 // @public
 export interface QwikWindow extends WindowProxy {
     document: QwikDocument;
