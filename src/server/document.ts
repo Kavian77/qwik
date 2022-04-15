@@ -19,7 +19,7 @@ import { getElement } from '../core/render/render.public';
 
 /**
  * Create emulated `Window` for server environment. Does not implement the full browser
- * `window` API, but rather only  emulates `document` and `location`.
+ * `window` API, but rather only emulates `document` and `location`.
  * @public
  */
 export function createWindow(opts?: WindowOptions): QwikWindow {

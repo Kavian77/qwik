@@ -1,11 +1,3 @@
-/**
- * @license
- * Copyright Builder.io, Inc. All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://github.com/BuilderIO/qwik/blob/main/LICENSE
- */
-
 import { getContext, getEvent } from '../core/props/props';
 import type { QwikDocument } from '../core/document';
 import { fromCamelToKebabCase } from '../core/util/case';

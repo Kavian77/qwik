@@ -45,6 +45,17 @@ export function getQwikLoaderScript(opts?: {
 export interface QwikDocument extends Document {
 }
 
+// @alpha (undocumented)
+export const QwikLoader: FunctionComponent<QwikLoaderProps>;
+
+// @alpha (undocumented)
+export interface QwikLoaderProps {
+    // (undocumented)
+    debug?: boolean;
+    // (undocumented)
+    events?: string[];
+}
+
 // Warning: (ae-forgotten-export) The symbol "QwikLoaderProps" needs to be exported by the entry point index.d.ts
 //
 // @alpha (undocumented)

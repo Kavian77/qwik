@@ -124,9 +124,9 @@ describe('document ensureGlobals', () => {
   });
 
   it('qwik server createWindow()', () => {
-    const gbl = createWindow();
-    expect(gbl.document.defaultView).not.toBeUndefined();
-    expect(gbl.document.defaultView).toBe(gbl);
+    const win = createWindow();
+    expect(win.document.defaultView).not.toBeUndefined();
+    expect(win.document.defaultView).toBe(win);
   });
 
   it('some other document', () => {

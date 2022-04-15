@@ -11,7 +11,7 @@ import { setTestPlatform } from './platform';
 import type { MockDocumentOptions, MockWindowOptions, MockDocument, MockWindow } from './types';
 
 /**
- * Create emulated `QwikGlobal` useful for testing.
+ * Create emulated `window` useful for testing.
  */
 export function createWindow(opts: MockDocumentOptions = {}): MockWindow {
   const win = createServerWindow(opts);
@@ -20,9 +20,8 @@ export function createWindow(opts: MockDocumentOptions = {}): MockWindow {
 }
 
 /**
- * Create emulated `Document` in node environment.
+ * Create emulated `document` for testing.
  */
 export function createDocument(opts: MockWindowOptions = {}): MockDocument {
-  const gbl = createWindow(opts);
-  return gbl.document;
+  return createWindow(opts).document;
 }
