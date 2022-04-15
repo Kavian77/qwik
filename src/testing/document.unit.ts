@@ -6,15 +6,15 @@
  * found in the LICENSE file at https://github.com/BuilderIO/qwik/blob/main/LICENSE
  */
 
-import { createGlobal } from './document';
+import { createWindow } from './document';
 import { pathToFileURL } from 'url';
 
-describe('global', () => {
+describe('window', () => {
   it('should create document', () => {
-    const global = createGlobal({
+    const win = createWindow({
       url: pathToFileURL(__filename),
     });
-    expect(global.document.baseURI).toContain('file://');
-    expect(global.document.baseURI).toContain('document.unit.ts');
+    expect(win.document.baseURI).toContain('file://');
+    expect(win.document.baseURI).toContain('document.unit.ts');
   });
 });

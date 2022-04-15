@@ -8,17 +8,9 @@
 'use strict';
 
 if (typeof globalThis == 'undefined') {
-  const e =
-    'undefined' != typeof global
-      ? global
-      : 'undefined' != typeof window
-      ? window
-      : 'undefined' != typeof self
-      ? self
-      : {};
-  e.globalThis = e;
-}
-globalThis.qwikCore = (function (exports) {
+  const g = 'undefined' != typeof global ? global : 'undefined' != typeof window ? window : 'undefined' != typeof self ? self : {};
+  g.globalThis = g;
+}globalThis.qwikCore = (function (exports) {
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
@@ -3698,7 +3690,7 @@ const Slot = (props) => {
 /**
  * @alpha
  */
-const version = "0.0.18-7-dev20220408224756";
+const version = '0.0.18-7-dev20220408224756';
 
 /**
  * Render JSX.

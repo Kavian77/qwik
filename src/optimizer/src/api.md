@@ -117,6 +117,14 @@ export interface OptimizerSystem {
 }
 
 // @alpha (undocumented)
+export interface OptimizerSystemStats {
+    // (undocumented)
+    isDirectory: boolean;
+    // (undocumented)
+    isFile: boolean;
+}
+
+// @alpha (undocumented)
 export interface OutputEntryMap {
     // (undocumented)
     injections?: GlobalInjections[];

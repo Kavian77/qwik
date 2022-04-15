@@ -1,14 +1,14 @@
 export type {
   CreateRenderToStringOptions,
   DocumentOptions,
-  GlobalOptions,
   QwikDocument,
-  QwikGlobal,
+  QwikWindow,
   RenderToDocumentOptions,
   RenderToStringOptions,
   RenderToStringResult,
+  WindowOptions,
 } from './types';
-export { createDocument, createGlobal, renderToDocument, renderToString } from './document';
+export { createDocument, createWindow, renderToDocument, renderToString } from './document';
 export { createTimer, versions } from './utils';
 export { getImports } from './prefetch';
 export { getQwikLoaderScript } from './scripts';

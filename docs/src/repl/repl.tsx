@@ -1,4 +1,5 @@
 import { component$, Host, useScopedStyles$, useStore } from '@builder.io/qwik';
+import { isBrowser } from '@builder.io/qwik/build';
 import { CloseIcon } from '../components/svgs/close-icon';
 import type {
   Diagnostic,
@@ -25,9 +26,8 @@ export const Repl = component$(async (props: ReplProps) => {
     version: '0.0.18-7-dev20220408224756',
     minify: 'none',
     entryStrategy: 'single',
-    iframeUrl: '',
     ssrBuild: true,
-    debug: false
+    debug: false,
   });
 
   if (!store.selectedInputPath) {
@@ -38,9 +38,8 @@ export const Repl = component$(async (props: ReplProps) => {
     }
   }
 
-  if (typeof window !== 'undefined' && !window.replClientInitialized) {
+  if (isBrowser && !window.replClientInitialized) {
     window.replClientInitialized = true;
-    store.iframeUrl = '/repl/index.html';
 
     const onMessageFromIframe = (ev: MessageEvent) => {
       if (ev.data.type === 'qwikReplReady') {
@@ -103,11 +102,11 @@ export const Repl = component$(async (props: ReplProps) => {
 
   const formatFilePath = (path: string) => {
     if (path.startsWith('/')) {
-      return path.substring(1)
+      return path.substring(1);
     }
     return path;
-  }
-  
+  };
+
   return (
     <Host class={{ repl: true, 'repl-narrow': props.layout === 'narrow' }}>
       <div class="input-tabs repl-tabs">
@@ -216,7 +215,7 @@ export const Repl = component$(async (props: ReplProps) => {
             'output-app': true,
           }}
         >
-          <iframe src={store.iframeUrl} />
+          <iframe src="/repl/index.html" />
         </div>
         <div
           class={{
@@ -314,8 +313,8 @@ export interface ReplStore {
   minify: MinifyMode;
   ssrBuild: boolean;
   entryStrategy: string;
-  iframeUrl: string;
-  version: string;debug:boolean;
+  version: string;
+  debug: boolean;
 }
 
 interface ReplResult {

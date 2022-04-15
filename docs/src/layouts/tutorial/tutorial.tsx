@@ -53,7 +53,7 @@ export function render(opts: RenderToStringOptions) {
   return renderToString(
     <html>
       <head>
-        <Head />
+        <title>Qwik Demo</title>
       </head>
       <body>
         <Main />

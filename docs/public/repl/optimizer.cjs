@@ -5,9 +5,9 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://github.com/BuilderIO/qwik/blob/main/LICENSE
  */
- if ("undefined" == typeof globalThis) {
-  const e = "undefined" != typeof global ? global : "undefined" != typeof window ? window : "undefined" != typeof self ? self : {};
-  e.globalThis = e;
+if ("undefined" == typeof globalThis) {
+  const g = "undefined" != typeof global ? global : "undefined" != typeof window ? window : "undefined" != typeof self ? self : {};
+  g.globalThis = g;
 }
 
 globalThis.qwikOptimizer = function(module) {

@@ -3,12 +3,13 @@
 const update = async (version, options) => {
   console.time('Update');
 
+  const diagnostics = [];
   const result = {
     type: 'result',
     outputHtml: '',
     clientModules: [],
     serverModules: [],
-    diagnostics: [],
+    diagnostics,
     docElementAttributes: {},
     headAttributes: {},
     headElements: [],
@@ -19,14 +20,12 @@ const update = async (version, options) => {
   try {
     await loadDependencies(version, options);
 
-    result.clientModules = await bundleApp(options, result.diagnostics, '/main.tsx', 'client');
+    result.clientModules = await bundleApp(options, diagnostics, '/main.tsx', 'client');
+    result.serverModules = await bundleApp(options, diagnostics, '/entry.server.tsx', 'server');
 
-    result.serverModules = await bundleApp(
-      options,
-      result.diagnostics,
-      '/entry.server.tsx',
-      'server'
-    );
+    await renderHtml(result);
+
+    ctx.clientModules = result.clientModules;
   } catch (e) {
     result.diagnostics.push({
       message: String(e),
@@ -34,8 +33,6 @@ const update = async (version, options) => {
     });
     console.error(e);
   }
-
-  self.result = result;
 
   await sendMessageToIframe(result);
 
@@ -57,7 +54,7 @@ const bundleApp = async (options, diagnostics, inputPath, buildType) => {
 
   const rollupInputOpts = {
     input: inputPath,
-    cache: self.rollupCache,
+    cache: ctx.rollupCache,
     plugins: [
       self.qwikOptimizer.qwikRollup(qwikRollupPluginOpts),
       {
@@ -65,33 +62,28 @@ const bundleApp = async (options, diagnostics, inputPath, buildType) => {
           if (!importer) {
             return importee;
           }
-
           if (importee === '@builder.io/qwik' || importee === '@builder.io/qwik/jsx-runtime') {
-            // return '\0@qwik-core';
-            return {
-              id: `/repl/core.mjs`,
-              external: true,
-            };
+            return '\0qwikCore';
           }
-
           if (importee === '@builder.io/qwik/server') {
-            return {
-              id: `/repl/server.mjs`,
-              external: true,
-            };
+            return '\0qwikServer';
           }
-
           return {
             id: importee,
             external: true,
           };
         },
         load(id) {
-          if (id === '\0@qwik-core') {
-            return self.coreEsmCode;
+          if (buildType === 'server') {
+            if (id === '\0qwikCore') {
+              return getRuntimeBundle('qwikCore');
+            }
+            if (id === '\0qwikServer') {
+              return getRuntimeBundle('qwikServer');
+            }
           }
-          if (id === '\0@qwik-server') {
-            return self.serverEsmCode;
+          if (id === '\0qwikCore') {
+            return ctx.coreEsmCode;
           }
           return null;
         },
@@ -103,13 +95,13 @@ const bundleApp = async (options, diagnostics, inputPath, buildType) => {
   };
 
   const rollupOutputOpts = {
-    format: 'es',
+    format: isSsr ? 'cjs' : 'es',
     inlineDynamicImports: isSsr,
   };
 
   const bundle = await self.rollup.rollup(rollupInputOpts);
 
-  self.rollupCache = bundle.cache;
+  ctx.rollupCache = bundle.cache;
 
   const generated = await bundle.generate(rollupOutputOpts);
 
@@ -122,6 +114,31 @@ const bundleApp = async (options, diagnostics, inputPath, buildType) => {
   console.timeEnd(`Bundle ${buildType}`);
 
   return outputs;
+};
+
+const renderHtml = async (result) => {
+  console.time(`SSR Html`);
+
+  const serverTransformModule = result.serverModules.find((m) => m.path.endsWith('.js'));
+  const serverCode = serverTransformModule.code;
+
+  const module = { exports: {} };
+  const runModule = new Function('module', 'exports', serverCode);
+  runModule(module, module.exports);
+
+  const server = module.exports;
+
+  const ssrResult = await server.render({
+    url: '/repl/',
+    base: '/repl/',
+  });
+
+  result.outputHtml = self.prettier.format(ssrResult.html, {
+    parser: 'html',
+    plugins: self.prettierPlugins,
+  });
+
+  console.timeEnd(`SSR Html`);
 };
 
 const receiveMessageFromIframe = (ev) => {
@@ -139,23 +156,33 @@ const loadDependencies = async (version, options) => {
   if (
     !self.qwikCore ||
     !self.qwikOptimizer ||
+    !self.qwikServer ||
     !self.rollup ||
-    !self.coreEsmCode ||
     self.qwikCore.version !== version ||
-    self.qwikOptimizer.versions.qwik !== version
+    self.qwikOptimizer.versions.qwik !== version ||
+    self.qwikServer.version !== version ||
+    self.rollup.VERSION !== rollupVersion
   ) {
     console.time('Load dependencies');
-    self.qwikCore = self.qwikOptimizer = null;
-    self.coreEsmCode = null;
-    self.rollup = null;
+    self.qwikCore = self.qwikOptimizer = self.qwikServer = self.rollup = null;
 
     const coreCjsUrl = `/repl/core.cjs`;
     const coreEsmUrl = `/repl/core.mjs`;
     const optimizerCjsUrl = `/repl/optimizer.cjs`;
-    const serverEsmUrl = `/repl/server.mjs`;
+    const serverCjsUrl = `/repl/server.cjs`;
     const rollupUrl = getNpmCdnUrl('rollup', rollupVersion, '/dist/rollup.browser.js');
+    const prettierUrl = getNpmCdnUrl('prettier', prettierVersion, '/standalone.js');
+    const prettierHtmlUrl = getNpmCdnUrl('prettier', prettierVersion, '/parser-html.js');
 
-    const depUrls = [coreCjsUrl, coreEsmUrl, optimizerCjsUrl, serverEsmUrl, rollupUrl];
+    const depUrls = [
+      coreCjsUrl,
+      coreEsmUrl,
+      optimizerCjsUrl,
+      serverCjsUrl,
+      rollupUrl,
+      prettierUrl,
+      prettierHtmlUrl,
+    ];
 
     const rsps = await Promise.all(depUrls.map((u) => fetch(u)));
 
@@ -165,22 +192,37 @@ const loadDependencies = async (version, options) => {
       }
     });
 
-    const [coreCjsCode, coreEsmCode, optimizerCjsCode, serverEsmCode, rollupCode] =
-      await Promise.all(rsps.map((rsp) => rsp.text()));
+    const [
+      coreCjsCode,
+      coreEsmCode,
+      optimizerCjsCode,
+      serverCjsCode,
+      rollupCode,
+      prettierCode,
+      prettierHtmlCode,
+    ] = await Promise.all(rsps.map((rsp) => rsp.text()));
 
-    self.coreEsmCode = coreEsmCode;
-    self.serverEsmCode = serverEsmCode;
+    ctx.coreEsmCode = coreEsmCode;
 
     const coreApply = new Function(coreCjsCode);
     const optimizerApply = new Function(optimizerCjsCode);
+    const serverApply = new Function(serverCjsCode);
     const rollupApply = new Function(rollupCode);
+    const prettierApply = new Function(prettierCode);
+    const prettierHtmlApply = new Function(prettierHtmlCode);
 
     coreApply();
     console.debug(`Loaded @builder.io/qwik: ${self.qwikCore.version}`);
     optimizerApply();
     console.debug(`Loaded @builder.io/qwik/optimizer: ${self.qwikOptimizer.versions.qwik}`);
+    serverApply();
+    console.debug(`Loaded @builder.io/qwik/server: ${self.qwikServer.versions.qwik}`);
     rollupApply();
     console.debug(`Loaded rollup: ${self.rollup.VERSION}`);
+    prettierApply();
+    prettierHtmlApply();
+    console.debug(`Loaded prettier: ${self.prettier.version}`);
+
     console.timeEnd('Load dependencies');
   }
 
@@ -195,40 +237,49 @@ const loadDependencies = async (version, options) => {
   }
 };
 
-self.onfetch = (ev) => {
+const onIframeRequest = (ev) => {
   const reqUrl = new URL(ev.request.url);
   const pathname = reqUrl.pathname;
 
-  if (self.result) {
-    const modules = self.result.transformModules;
-    if (Array.isArray(modules)) {
-      const module = modules.find((m) => {
-        const moduleUrl = new URL('./' + m.path, reqUrl);
-        return pathname === moduleUrl.pathname;
-      });
-      if (module) {
-        return ev.respondWith(
-          new Response(module.code, {
-            headers: {
-              'Content-Type': 'application/javascript; charset=utf-8',
-              'Cache-Control': 'no-store',
-              'X-QWIK-REPL': self.qwikCore.version,
-            },
-          })
-        );
-      }
+  if (Array.isArray(ctx.clientModules)) {
+    const clientModule = ctx.clientModules.find((m) => {
+      const moduleUrl = new URL('./' + m.path, reqUrl);
+      return pathname === moduleUrl.pathname;
+    });
+
+    if (clientModule) {
+      return ev.respondWith(
+        new Response(clientModule.code, {
+          headers: {
+            'Content-Type': 'application/javascript; charset=utf-8',
+            'Cache-Control': 'no-store',
+            'X-QWIK-REPL': self.qwikCore.version,
+          },
+        })
+      );
     }
   }
 };
 
-self.onmessage = receiveMessageFromIframe;
-
-self.oninstall = () => self.skipWaiting();
-
-self.onactivate = () => self.clients.claim();
+const ctx = {};
 
 const rollupVersion = '2.70.1';
+const prettierVersion = '2.6.2';
 const terserVersion = '5.12.1';
 
-const getNpmCdnUrl = (package, version, path) =>
-  new URL(`https://cdn.jsdelivr.net/npm/${package}${version ? '@' + version : ''}${path}`);
+const getNpmCdnUrl = (packageName, version, path) =>
+  new URL(`https://cdn.jsdelivr.net/npm/${packageName}${version ? '@' + version : ''}${path}`);
+
+const getRuntimeBundle = (runtimeBundle) => {
+  const exportKeys = Object.keys(self[runtimeBundle]);
+  const code = `
+    const { ${exportKeys.join(', ')} } = self.${runtimeBundle};
+    export { ${exportKeys.join(', ')} };
+  `;
+  return code;
+};
+
+self.onmessage = receiveMessageFromIframe;
+self.onfetch = onIframeRequest;
+self.oninstall = () => self.skipWaiting();
+self.onactivate = () => self.clients.claim();

@@ -1,4 +1,4 @@
-import { createDocument, createGlobal } from './document';
+import { createDocument, createWindow } from './document';
 import { ensureGlobals, normalizeUrl } from './utils';
 
 describe('normalizeUrl', () => {
@@ -123,8 +123,8 @@ describe('document ensureGlobals', () => {
     expect(doc.defaultView!.document).toBe(doc);
   });
 
-  it('qwik server createGlobal()', () => {
-    const gbl = createGlobal();
+  it('qwik server createWindow()', () => {
+    const gbl = createWindow();
     expect(gbl.document.defaultView).not.toBeUndefined();
     expect(gbl.document.defaultView).toBe(gbl);
   });
