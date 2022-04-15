@@ -1,14 +1,8 @@
 import { component$, Host, useScopedStyles$, useStore } from '@builder.io/qwik';
 import { isBrowser } from '@builder.io/qwik/build';
 import { CloseIcon } from '../components/svgs/close-icon';
-import type {
-  Diagnostic,
-  MinifyMode,
-  QwikPluginOptions,
-  TransformModuleInput,
-  TransformModule,
-} from '@builder.io/qwik/optimizer';
 import styles from './repl.css?inline';
+import type { ReplInputOptions, ReplProps, ReplStore, ReplResult, ReplWindow } from './types';
 
 export const Repl = component$(async (props: ReplProps) => {
   useScopedStyles$(styles);
@@ -28,6 +22,7 @@ export const Repl = component$(async (props: ReplProps) => {
     entryStrategy: 'single',
     ssrBuild: true,
     debug: false,
+    iframeUrl: 'about:blank',
   });
 
   if (!store.selectedInputPath) {
@@ -96,6 +91,12 @@ export const Repl = component$(async (props: ReplProps) => {
         store.selectedOutputPanel = 'app';
       }
     };
+
+    store.iframeUrl = '/repl/index.html';
+    if (location.hostname === 'qwik.builder.io') {
+      // use a different domain on purpose
+      store.iframeUrl = 'https://qwik-docs.pages.dev' + store.iframeUrl;
+    }
 
     window.addEventListener('message', onMessageFromIframe);
   }
@@ -215,7 +216,7 @@ export const Repl = component$(async (props: ReplProps) => {
             'output-app': true,
           }}
         >
-          <iframe src="/repl/index.html" />
+          <iframe src={store.iframeUrl} />
         </div>
         <div
           class={{
@@ -294,55 +295,4 @@ export const Repl = component$(async (props: ReplProps) => {
   );
 });
 
-export interface ReplProps {
-  inputs?: TransformModuleInput[];
-  selectedInputPath?: string;
-  layout: 'narrow';
-}
-
-export interface ReplStore {
-  inputs: TransformModuleInput[];
-  outputHtml: string;
-  clientModules: TransformModule[];
-  serverModules: TransformModule[];
-  diagnostics: Diagnostic[];
-  selectedInputPath: string;
-  selectedOutputPanel: OutputPanel;
-  selectedClientModule: string;
-  selectedServerModule: string;
-  minify: MinifyMode;
-  ssrBuild: boolean;
-  entryStrategy: string;
-  version: string;
-  debug: boolean;
-}
-
-interface ReplResult {
-  type: 'result';
-  outputHtml: string;
-  clientModules: TransformModule[];
-  serverModules: TransformModule[];
-  diagnostics: Diagnostic[];
-  docElementAttributes: ReplResultAttributes;
-  headAttributes: ReplResultAttributes;
-  headElements: { tagName: string; attributes: ReplResultAttributes }[];
-  bodyAttributes: ReplResultAttributes;
-  bodyInnerHtml: string;
-}
-
-interface ReplInputOptions extends Omit<QwikPluginOptions, 'srcDir'> {
-  srcInputs: TransformModuleInput[];
-}
-
-interface ReplResultAttributes {
-  [attrName: string]: string;
-}
-
-interface ReplWindow extends Window {
-  replClientInitialized: boolean;
-  replIframeWindow: Window;
-}
-
 declare const window: ReplWindow;
-
-type OutputPanel = 'app' | 'outputHtml' | 'clientModules' | 'serverModules' | 'diagnostics';

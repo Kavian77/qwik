@@ -1,28 +1,30 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8" data-repl />
-    <script type="module" data-repl>
+    <meta charset="utf-8" />
+    <script type="module">
       const init = () => {
         const updateAppOutput = (result) => {
           resetDocument();
+
+          if (result.qwikloader) {
+            let qwikloaderScript = document.getElementById('qwikloader');
+            if (!qwikloaderScript) {
+              qwikloaderScript = document.createElement('script');
+              qwikloaderScript.setAttribute('id', 'qwikloader');
+              qwikloaderScript.innerHTML = result.qwikloader;
+              document.head.appendChild(qwikloaderScript);
+            }
+          }
+
           setAttributes(document.documentElement, result.docElementAttributes);
           setAttributes(document.head, result.headAttributes);
           setAttributes(document.body, result.bodyAttributes);
+
           document.body.innerHTML = result.bodyInnerHtml;
-          for (const elmData of result.headElements) {
-            const elm = document.createElement(elmData.tagName);
-            setAttributes(elm, elmData.attributes);
-            document.head.appendChild(elm);
-          }
         };
 
         const resetDocument = () => {
-          for (let i = document.head.children.length - 1; i >= 0; i--) {
-            if (!document.head.children[i].hasAttribute('data-repl')) {
-              document.head.remove(document.head.children[i]);
-            }
-          }
           removeAttributes(document.documentElement);
           removeAttributes(document.head);
           removeAttributes(document.body);

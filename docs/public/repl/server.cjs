@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://github.com/BuilderIO/qwik/blob/main/LICENSE
  */
 
-if (typeof globalThis == 'undefined') {
+ if (typeof globalThis == 'undefined') {
   const g = 'undefined' != typeof global ? global : 'undefined' != typeof window ? window : 'undefined' != typeof self ? self : {};
   g.globalThis = g;
 }
@@ -154,7 +154,7 @@ var BASE_URI = `http://document.qwik.dev/`;
 var noop = () => {
 };
 var versions = {
-  qwik: "0.0.18-7-dev20220408224756",
+  qwik: "0.0.18-7-dev20220415170849",
   qwikDom: "2.1.14"
 };
 
@@ -10244,7 +10244,8 @@ function getQwikLoaderScript(opts = {}) {
 var import_qwik3 = require("./core.cjs");
 var QwikLoader = ({ events, debug }) => {
   return (0, import_qwik3.jsx)("script", {
-    children: [getQwikLoaderScript({ events, debug })]
+    children: [getQwikLoaderScript({ events, debug })],
+    id: "qwikloader"
   });
 };
 // Annotate the CommonJS export names for ESM import in node:

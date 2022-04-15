@@ -18,5 +18,6 @@ export const QwikLoader: FunctionComponent<QwikLoaderProps> = ({ events, debug }
     // It is tempting to add `type="module"` but that breaks in FF because it allows `scroll`
     // event to fire before the module is loaded.
     children: [getQwikLoaderScript({ events, debug })],
+    id: 'qwikloader',
   });
 };

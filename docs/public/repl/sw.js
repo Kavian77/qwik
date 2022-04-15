@@ -12,9 +12,9 @@ const update = async (version, options) => {
     diagnostics,
     docElementAttributes: {},
     headAttributes: {},
-    headElements: [],
     bodyAttributes: {},
     bodyInnerHtml: '',
+    qwikloader: '',
   };
 
   try {
@@ -129,9 +129,22 @@ const renderHtml = async (result) => {
   const server = module.exports;
 
   const ssrResult = await server.render({
-    url: '/repl/',
     base: '/repl/',
   });
+
+  const doc = self.qwikServer.createDocument({ html: ssrResult.html });
+  const qwikLoader = doc.getElementById('qwikloader');
+  if (qwikLoader) {
+    qwikLoader.remove();
+    result.qwikloader = qwikLoader.innerHTML;
+  }
+
+  getAttributes(doc.documentElement, result.docElementAttributes);
+  getAttributes(doc.head, result.headAttributes);
+  getAttributes(doc.body, result.bodyAttributes);
+  result.bodyInnerHtml = doc.body.innerHTML;
+
+  result.appHtml = doc.outerHTML;
 
   result.outputHtml = self.prettier.format(ssrResult.html, {
     parser: 'html',
@@ -139,6 +152,12 @@ const renderHtml = async (result) => {
   });
 
   console.timeEnd(`SSR Html`);
+};
+
+const getAttributes = (elm, attrs) => {
+  for (let i = 0; i < elm.attributes.length; i++) {
+    attrs[elm.attributes[i].nodeName] = elm.attributes[i].nodeValue;
+  }
 };
 
 const receiveMessageFromIframe = (ev) => {
