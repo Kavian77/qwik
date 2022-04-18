@@ -1,3 +1,6 @@
+/**
+ * Menu used to create the tutorial navigation and steps.
+ */
 export const menu: TutorialMenu = [
   {
     title: 'Introduction',
@@ -9,6 +12,15 @@ export const menu: TutorialMenu = [
       {
         title: 'Lazy Loading',
         path: '/tutorial/introduction/lazy-loading',
+      },
+    ],
+  },
+  {
+    title: 'Reactivity',
+    items: [
+      {
+        title: 'Assignments',
+        path: '/tutorial/reactivity/assignments',
       },
     ],
   },
