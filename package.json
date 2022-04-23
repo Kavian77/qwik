@@ -1,6 +1,6 @@
 {
   "name": "@builder.io/qwik",
-  "version": "0.0.18",
+  "version": "0.0.19-0",
   "description": "An Open-Source sub-framework designed with a focus on server-side-rendering, lazy-loading, and styling/animation.",
   "scripts": {
     "build": "node scripts --tsc --build --api --eslint --platform-binding --wasm",
@@ -158,7 +158,7 @@
   "@comment type": "Setting type to 'commonjs' is important as many of the bazel tooling assumes 'commonjs'. For code which wants ESM a second 'package.json' file needs to be created for just those files.",
   "type": "commonjs",
   "license": "MIT",
-  "homepage": "https://github.com/BuilderIO/qwik#readme",
+  "homepage": "https://qwik.builder.io/",
   "repository": {
     "type": "git",
     "url": "https://github.com/BuilderIO/qwik.git"
