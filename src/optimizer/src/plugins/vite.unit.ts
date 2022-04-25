@@ -1,12 +1,12 @@
 import { join, resolve } from 'path';
-import { qwikVite, QwikViteOptions } from './vite';
+import { qwikVite, QwikVitePluginOptions } from './vite';
 import type { Plugin as VitePlugin } from 'vite';
 import type { OptimizerOptions } from '../types';
 import type { OutputOptions } from 'rollup';
 
 describe('vite  plugin', () => {
   const cwd = process.cwd();
-  let inputOpts: QwikViteOptions = {};
+  let inputOpts: QwikVitePluginOptions = {};
 
   beforeEach(() => {
     inputOpts = {

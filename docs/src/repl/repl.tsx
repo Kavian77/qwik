@@ -1,6 +1,7 @@
 import { component$, Host, useScopedStyles$, useStore } from '@builder.io/qwik';
 import { isBrowser } from '@builder.io/qwik/build';
 import { CloseIcon } from '../components/svgs/close-icon';
+import { Monaco } from './monaco';
 import styles from './repl.css?inline';
 import type { ReplInputOptions, ReplProps, ReplStore, ReplResult, ReplWindow } from './types';
 
@@ -17,11 +18,11 @@ export const Repl = component$(async (props: ReplProps) => {
     selectedOutputPanel: 'app',
     selectedClientModule: '',
     selectedServerModule: '',
-    version: '0.0.18-7-dev20220408224756',
+    version: '0.0.19-0',
     minify: 'none',
     entryStrategy: 'single',
     ssrBuild: true,
-    debug: false,
+    debug: true,
     iframeUrl: 'about:blank',
   });
 
@@ -47,6 +48,7 @@ export const Repl = component$(async (props: ReplProps) => {
 
     const postInputUpdate = () => {
       const opts: ReplInputOptions = {
+        debug: store.debug,
         srcInputs: store.inputs,
         minify: store.minify,
         entryStrategy: {
@@ -123,7 +125,7 @@ export const Repl = component$(async (props: ReplProps) => {
             </button>
             <button
               class="repl-tab-delete"
-              hidden={input.path === '/main.tsx'}
+              hidden={input.path === '/app.tsx'}
               onClick$={() => {
                 store.inputs = store.inputs.filter((i) => i.path !== input.path);
                 if (store.selectedInputPath === input.path) {
@@ -142,16 +144,7 @@ export const Repl = component$(async (props: ReplProps) => {
       </div>
 
       <div class="input-panel">
-        {store.inputs.map((input) => (
-          <div
-            class={{
-              'active-input': store.selectedInputPath === input.path,
-              'textarea-input-panel': true,
-            }}
-          >
-            <textarea onInput$={(_, elm) => {}} value={input.code} />
-          </div>
-        ))}
+        <Monaco inputs={store.inputs} selectedPath={store.selectedInputPath} />
       </div>
 
       <div class="output-tabs repl-tabs">

@@ -138,3 +138,8 @@
   grid-area: repl-footer-panel;
   background-color: rgb(183, 183, 183);
 }
+
+.monaco-editor-container {
+  height: 100%;
+  padding-top: 10px;
+}

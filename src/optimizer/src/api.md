@@ -187,10 +187,10 @@ export interface QwikRollupPluginOptions extends BasePluginOptions {
 }
 
 // @alpha (undocumented)
-export function qwikVite(qwikViteOpts?: QwikViteOptions): any;
+export function qwikVite(qwikViteOpts?: QwikVitePluginOptions): any;
 
 // @alpha (undocumented)
-export interface QwikViteOptions extends BasePluginOptions {
+export interface QwikVitePluginOptions extends BasePluginOptions {
     // (undocumented)
     optimizerOptions?: OptimizerOptions;
     // (undocumented)

@@ -25,5 +25,5 @@ build
 build
 node_modules
 tsconfig.tsbuildinfo
-docs/pages/
+docs/pages/*.mdx
 docs/server/

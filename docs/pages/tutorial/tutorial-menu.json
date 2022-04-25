@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Introduction",
+    "items": [
+      {
+        "title": "Basics",
+        "path": "/tutorial/introduction/basics"
+      },
+      {
+        "title": "Lazy Loading",
+        "path": "/tutorial/introduction/lazy-loading"
+      }
+    ]
+  },
+  {
+    "title": "Reactivity",
+    "items": [
+      {
+        "title": "Assignments",
+        "path": "/tutorial/reactivity/assignments"
+      }
+    ]
+  }
+]

@@ -35,10 +35,10 @@
   resolved "https://registry.yarnpkg.com/@builder.io/partytown/-/partytown-0.5.2.tgz#ba40369f7c0fd22169eaf6906325c150d7f77dd0"
   integrity sha512-DHJPs5WPVFExUuGMsuA6yZQ6OPtVVv/3JJK9pzGrNfvuGNvlip5v7xOhXwZG26HLU9ZrrOFsOGhn5FUT2H7dPw==
 
-"@builder.io/qwik@0.0.18-dev20220422051630":
-  version "0.0.18-dev20220422051630"
-  resolved "https://registry.yarnpkg.com/@builder.io/qwik/-/qwik-0.0.18-dev20220422051630.tgz#e23f90cff3c1edc17b4289effce97b00ce9e8cf4"
-  integrity sha512-Uieqv31gfLCLZk080jaG9B+SWXm2eTwOolAySXvNmwkNSlCmk/VmDqXitwkApZa8fTtanVOS1P5cF51MjDaPIQ==
+"@builder.io/qwik@0.0.19-0":
+  version "0.0.19-0"
+  resolved "https://registry.yarnpkg.com/@builder.io/qwik/-/qwik-0.0.19-0.tgz#fda77164d09d15c745e10ed65f1a162c8898a59e"
+  integrity sha512-dBvBwkv1TD7XJIaTZ7UFRGl0C27LxjkEipf4Nlpj386n1B4V/lQ4zoWOd/ExHLPlnUQ5HUouioKtDg8RiTewwA==
 
 "@cloudflare/kv-asset-handler@0.2.0":
   version "0.2.0"
@@ -2093,6 +2093,11 @@ minimist@^1.1.1:
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+
+monaco-editor@^0.33.0:
+  version "0.33.0"
+  resolved "https://registry.yarnpkg.com/monaco-editor/-/monaco-editor-0.33.0.tgz#842e244f3750a2482f8a29c676b5684e75ff34af"
+  integrity sha512-VcRWPSLIUEgQJQIE0pVT8FcGBIgFoxz7jtqctE+IiCxWugD0DwgyQBcZBhdSrdMC84eumoqMZsGl2GTreOzwqw==
 
 mri@^1.1.0:
   version "1.2.0"

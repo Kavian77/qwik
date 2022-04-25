@@ -3,25 +3,26 @@
 const update = async (version, options) => {
   console.time('Update');
 
-  const diagnostics = [];
   const result = {
     type: 'result',
     outputHtml: '',
     clientModules: [],
     serverModules: [],
-    diagnostics,
+    diagnostics: [],
     docElementAttributes: {},
     headAttributes: {},
     bodyAttributes: {},
     bodyInnerHtml: '',
     qwikloader: '',
+    symbolsEntryMap: null,
+    transformedModuleOutput: {},
   };
 
   try {
     await loadDependencies(version, options);
 
-    result.clientModules = await bundleApp(options, diagnostics, '/main.tsx', 'client');
-    result.serverModules = await bundleApp(options, diagnostics, '/entry.server.tsx', 'server');
+    await bundleClient(options, result);
+    await bundleSSR(options, result);
 
     await renderHtml(result);
 
@@ -39,81 +40,127 @@ const update = async (version, options) => {
   console.timeEnd('Update');
 };
 
-const bundleApp = async (options, diagnostics, inputPath, buildType) => {
-  console.time(`Bundle ${buildType}`);
+const bundleClient = async (options, result) => {
+  console.time(`Bundle client`);
 
-  const isSsr = buildType === 'server';
+  console.log('options.srcInputs', options.srcInputs);
 
   const qwikRollupPluginOpts = {
+    buildMode: 'client',
+    isDevBuild: true,
+    debug: options.debug,
     srcInputs: options.srcInputs,
     entryStrategy: options.entryStrategy,
     minify: options.minify,
-    debug: options.debug,
-    ssrBuild: isSsr,
-  };
-
-  const rollupInputOpts = {
-    input: inputPath,
-    cache: ctx.rollupCache,
-    plugins: [
-      self.qwikOptimizer.qwikRollup(qwikRollupPluginOpts),
-      {
-        resolveId(importee, importer) {
-          if (!importer) {
-            return importee;
-          }
-          if (importee === '@builder.io/qwik' || importee === '@builder.io/qwik/jsx-runtime') {
-            return '\0qwikCore';
-          }
-          if (importee === '@builder.io/qwik/server') {
-            return '\0qwikServer';
-          }
-          return {
-            id: importee,
-            external: true,
-          };
-        },
-        load(id) {
-          if (buildType === 'server') {
-            if (id === '\0qwikCore') {
-              return getRuntimeBundle('qwikCore');
-            }
-            if (id === '\0qwikServer') {
-              return getRuntimeBundle('qwikServer');
-            }
-          }
-          if (id === '\0qwikCore') {
-            return ctx.coreEsmCode;
-          }
-          return null;
-        },
-      },
-    ],
-    onwarn(warning) {
-      diagnostics.push({ message: warning.message });
+    sourceMaps: false,
+    symbolsOutput: (s) => {
+      result.symbolsEntryMap = s;
+    },
+    transformedModuleOutput: (t) => {
+      result.transformedModuleOutput = t;
     },
   };
 
-  const rollupOutputOpts = {
-    format: isSsr ? 'cjs' : 'es',
-    inlineDynamicImports: isSsr,
+  const rollupInputOpts = {
+    input: '/app.tsx',
+    cache: ctx.rollupCache,
+    plugins: [self.qwikOptimizer.qwikRollup(qwikRollupPluginOpts), replResolver(options, 'client')],
+    onwarn(warning) {
+      result.diagnostics.push({ message: warning.message });
+    },
   };
 
   const bundle = await self.rollup.rollup(rollupInputOpts);
 
   ctx.rollupCache = bundle.cache;
 
-  const generated = await bundle.generate(rollupOutputOpts);
+  const generated = await bundle.generate({});
 
-  const outputs = generated.output.map((o) => ({
+  result.clientModules = generated.output.map((o) => ({
     path: o.fileName,
     code: o.code,
     isEntry: o.isDynamicEntry,
   }));
 
-  console.timeEnd(`Bundle ${buildType}`);
+  console.timeEnd(`Bundle client`);
+};
 
-  return outputs;
+const bundleSSR = async (options, result) => {
+  console.time(`Bundle ssr`);
+
+  const qwikRollupPluginOpts = {
+    buildMode: 'ssr',
+    isDevBuild: true,
+    debug: options.debug,
+    srcInputs: options.srcInputs,
+    entryStrategy: options.entryStrategy,
+    minify: options.minify,
+    sourceMaps: false,
+    symbolsInput: result.symbolsEntryMap,
+  };
+
+  const rollupInputOpts = {
+    input: '/entry.server.tsx',
+    cache: ctx.rollupCache,
+    plugins: [self.qwikOptimizer.qwikRollup(qwikRollupPluginOpts), replResolver(options, 'ssr')],
+    onwarn(warning) {
+      result.diagnostics.push({ message: warning.message });
+    },
+  };
+
+  const bundle = await self.rollup.rollup(rollupInputOpts);
+
+  ctx.rollupCache = bundle.cache;
+
+  const generated = await bundle.generate({
+    inlineDynamicImports: true,
+  });
+
+  result.serverModules = generated.output.map((o) => ({
+    path: o.fileName,
+    code: o.code,
+    isEntry: o.isDynamicEntry,
+  }));
+
+  console.timeEnd(`Bundle ssr`);
+};
+
+const replResolver = (options, buildMode) => {
+  return {
+    resolveId(id, importer) {
+      if (!importer) {
+        return id;
+      }
+      if (id === '@builder.io/qwik' || id === '@builder.io/qwik/jsx-runtime') {
+        return '\0qwikCore';
+      }
+      if (id === '@builder.io/qwik/server') {
+        return '\0qwikServer';
+      }
+      return {
+        id,
+        external: true,
+      };
+    },
+    load(id) {
+      const input = options.srcInputs.find((i) => i.path === id);
+      if (input) {
+        return input;
+      }
+      if (buildMode === 'ssr') {
+        if (id === '\0qwikCore') {
+          return getRuntimeBundle('qwikCore');
+        }
+        if (id === '\0qwikServer') {
+          return getRuntimeBundle('qwikServer');
+        }
+      }
+      if (id === '\0qwikCore') {
+        return ctx.coreEsmCode;
+      }
+      return null;
+    },
+  };
 };
 
 const renderHtml = async (result) => {
@@ -272,7 +319,7 @@ const onIframeRequest = (ev) => {
           headers: {
             'Content-Type': 'application/javascript; charset=utf-8',
             'Cache-Control': 'no-store',
-            'X-QWIK-REPL': self.qwikCore.version,
+            'X-Qwik-Playground': self.qwikCore.version,
           },
         })
       );
@@ -282,7 +329,7 @@ const onIframeRequest = (ev) => {
 
 const ctx = {};
 
-const rollupVersion = '2.70.1';
+const rollupVersion = '2.70.2';
 const prettierVersion = '2.6.2';
 const terserVersion = '5.12.1';
 

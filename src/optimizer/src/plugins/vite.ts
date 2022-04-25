@@ -16,7 +16,7 @@ import { QWIK_LOADER_DEFAULT_MINIFIED } from '../scripts';
 /**
  * @alpha
  */
-export function qwikVite(qwikViteOpts: QwikViteOptions = {}): any {
+export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
   let hasValidatedSource = false;
   let isClientOnly = false;
   let srcEntryDevInput = '';
@@ -448,7 +448,7 @@ const ENTRY_DEV_FILENAME_DEFAULT = 'entry.dev.tsx';
 /**
  * @alpha
  */
-export interface QwikViteOptions extends BasePluginOptions {
+export interface QwikVitePluginOptions extends BasePluginOptions {
   optimizerOptions?: OptimizerOptions;
   srcEntryDevInput?: string;
 }

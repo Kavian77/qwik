@@ -1,7 +1,7 @@
 import { useLocation } from '../../utils/useLocation';
-import { TutorialItem, menu } from './tutorial-menu';
+import tutorial, { TutorialSection } from './tutorial-data';
 
-export const TutorialContentHeader = ({ currentItem }: { currentItem: TutorialItem }) => {
+export const TutorialContentHeader = ({ currentItem }: { currentItem: TutorialSection }) => {
   const loc = useLocation();
 
   return (
@@ -22,13 +22,15 @@ export const TutorialContentHeader = ({ currentItem }: { currentItem: TutorialIt
           }
         }}
       >
-        {menu.map((m) => (
+        {tutorial.map((m) => (
           <optgroup label={m.title}>
-            {m.items.map((i) => (
-              <option selected={i.path === currentItem.path} value={i.path}>
-                {i.title}
-              </option>
-            ))}
+            {m.items
+              ? m.items.map((i) => (
+                  <option selected={i.path === currentItem.path} value={i.path}>
+                    {i.title}
+                  </option>
+                ))
+              : null}
           </optgroup>
         ))}
       </select>

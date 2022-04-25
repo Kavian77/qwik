@@ -1,7 +1,7 @@
 import type {
   Diagnostic,
   MinifyMode,
-  QwikPluginOptions,
+  QwikRollupPluginOptions,
   TransformModuleInput,
   TransformModule,
 } from '@builder.io/qwik/optimizer';
@@ -12,7 +12,7 @@ export interface ReplProps {
   layout: 'narrow';
 }
 
-export interface ReplInputOptions extends Omit<QwikPluginOptions, 'srcDir'> {
+export interface ReplInputOptions extends Omit<QwikRollupPluginOptions, 'srcDir'> {
   srcInputs: TransformModuleInput[];
 }
 

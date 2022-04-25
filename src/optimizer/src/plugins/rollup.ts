@@ -16,6 +16,10 @@ export function qwikRollup(qwikRollupOpts: QwikRollupPluginOptions = {}): any {
   const rollupPlugin: QwikRollupPlugin = {
     name: 'rollup-plugin-qwik',
 
+    api: {
+      getOptimizer: () => qwikPlugin.getOptimizer(),
+    },
+
     async options(inputOpts) {
       inputOpts.onwarn = (warning, warn) => {
         if (warning.plugin === 'typescript' && warning.message.includes('outputToFilesystem')) {

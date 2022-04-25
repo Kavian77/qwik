@@ -341,7 +341,7 @@ export function createPlugin(optimizerOptions: OptimizerOptions = {}) {
 
       results.set(pathId, newOutput);
 
-      // transformedOutputs.clear();
+      transformedOutputs.clear();
 
       for (const [id, output] of results.entries()) {
         const justChanged = newOutput === output;
