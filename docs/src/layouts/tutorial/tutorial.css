@@ -1,12 +1,13 @@
 .tutorial {
-  padding-top: 56px;
+  position: fixed;
+  top: 56px;
+  width: 100%;
   height: 100vh;
-  position: relative;
 }
 
 .tutorial main {
   display: grid;
-  grid-template-columns: minmax(30%, 40%) auto;
+  grid-template-columns: minmax(450px, 33%) auto;
   grid-template-areas: 'content-panel repl-panel';
   height: 100%;
 }

@@ -21,13 +21,13 @@ export interface ReplInputOptions extends Omit<QwikRollupPluginOptions, 'srcDir'
 export interface ReplStore {
   inputs: TransformModuleInput[];
   outputHtml: string;
-  clientModules: TransformModule[];
-  serverModules: TransformModule[];
+  clientModules: ReplModuleOutput[];
+  ssrModules: ReplModuleOutput[];
   diagnostics: Diagnostic[];
   selectedInputPath: string;
   selectedOutputPanel: OutputPanel;
   selectedClientModule: string;
-  selectedServerModule: string;
+  selectedSsrModule: string;
   minify: MinifyMode;
   ssrBuild: boolean;
   entryStrategy: string;
@@ -38,12 +38,19 @@ export interface ReplStore {
   iframeWindow: NoSerialize<MessageEventSource> | null;
 }
 
+export interface ReplModuleOutput {
+  path: string;
+  isEntry: boolean;
+  code: string;
+  size: string;
+}
+
 export interface ReplResult {
   type: 'result';
   appHtml: string;
   outputHtml: string;
-  clientModules: TransformModule[];
-  serverModules: TransformModule[];
+  clientModules: ReplModuleOutput[];
+  ssrModules: ReplModuleOutput[];
   diagnostics: Diagnostic[];
   qwikloader: string;
   docElementAttributes: ReplResultAttributes;

@@ -19,12 +19,12 @@ export const Repl = component$(async (props: ReplProps) => {
     inputs: props.inputs || [],
     outputHtml: '',
     clientModules: [],
-    serverModules: [],
+    ssrModules: [],
     diagnostics: [],
     selectedInputPath: '',
     selectedOutputPanel: 'app',
     selectedClientModule: '',
-    selectedServerModule: '',
+    selectedSsrModule: '',
     version: '0.0.19-0',
     minify: 'none',
     entryStrategy: 'single',
@@ -75,7 +75,7 @@ export const Repl = component$(async (props: ReplProps) => {
   const updateReplOutput = (result: ReplResult) => {
     store.outputHtml = result.outputHtml;
     store.clientModules = result.clientModules;
-    store.serverModules = result.serverModules;
+    store.ssrModules = result.ssrModules;
     store.diagnostics = result.diagnostics;
 
     if (!result.clientModules.some((m) => m.path === store.selectedClientModule)) {
@@ -86,11 +86,11 @@ export const Repl = component$(async (props: ReplProps) => {
       }
     }
 
-    if (!result.serverModules.some((m) => m.path === store.selectedServerModule)) {
-      if (result.serverModules.length > 0) {
-        store.selectedServerModule = result.serverModules[0].path;
+    if (!result.ssrModules.some((m) => m.path === store.selectedSsrModule)) {
+      if (result.ssrModules.length > 0) {
+        store.selectedSsrModule = result.ssrModules[0].path;
       } else {
-        store.selectedServerModule = '';
+        store.selectedSsrModule = '';
       }
     }
 

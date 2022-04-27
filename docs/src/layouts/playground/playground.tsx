@@ -32,7 +32,7 @@ const Playground = component$((props: PlaygroundLayoutProps) => {
     store.inputs = helloWorldApp.inputs;
   });
 
-  setHeadMeta(hostElm, { title: store.title });
+  setHeadMeta(hostElm, { title: `${store.title} - Qwik Playground` });
 
   setHeadStyles(hostElm, [
     {

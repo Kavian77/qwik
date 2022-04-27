@@ -1,3 +1,4 @@
+import { ReplOutputModles } from './repl-output-modules';
 import { ReplTabButton } from './repl-tab-button';
 import type { ReplStore } from './types';
 
@@ -74,23 +75,7 @@ export const ReplOutputPanel = ({ store }: ReplOutputPanelProps) => {
           }}
         >
           {store.selectedOutputPanel === 'clientModules' ? (
-            <>
-              <select
-                hidden={store.clientModules.length === 0}
-                onChange$={(_, elm: any) => {
-                  store.selectedClientModule = elm.value;
-                }}
-              >
-                {store.clientModules.map((m) => (
-                  <option selected={m.path === store.selectedClientModule} value={m.path}>
-                    {m.path}
-                  </option>
-                ))}
-              </select>
-              {store.clientModules.map((m) =>
-                m.path === store.selectedClientModule ? <pre>{m.code}</pre> : null
-              )}
-            </>
+            <ReplOutputModles buildPath="/build/" outputs={store.clientModules} />
           ) : null}
         </div>
         <div
@@ -100,23 +85,7 @@ export const ReplOutputPanel = ({ store }: ReplOutputPanelProps) => {
           }}
         >
           {store.selectedOutputPanel === 'serverModules' ? (
-            <>
-              <select
-                hidden={store.serverModules.length === 0}
-                onChange$={(_, elm: any) => {
-                  store.selectedServerModule = elm.value;
-                }}
-              >
-                {store.serverModules.map((m) => (
-                  <option selected={m.path === store.selectedServerModule} value={m.path}>
-                    {m.path}
-                  </option>
-                ))}
-              </select>
-              {store.serverModules.map((m) =>
-                m.path === store.selectedServerModule ? <pre>{m.code}</pre> : null
-              )}
-            </>
+            <ReplOutputModles buildPath="/server/" outputs={store.ssrModules} />
           ) : null}
         </div>
         <div

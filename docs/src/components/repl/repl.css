@@ -112,7 +112,6 @@
   z-index: 0;
   background-color: white;
   pointer-events: none;
-  padding: 10px;
 }
 
 .output-result.active-output {
@@ -141,4 +140,72 @@
 
 .editor-container {
   height: 100%;
+}
+
+.output-modules {
+  display: grid;
+  grid-template-columns: minmax(250px, 25%) auto;
+  grid-template-areas: 'repl-file-tree repl-file-text';
+  height: 100%;
+  overflow: hidden;
+
+  font-family: Menlo, Monaco, 'Courier New', monospace;
+  font-weight: normal;
+  font-size: 12px;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+  line-height: 18px;
+  letter-spacing: 0px;
+}
+
+.output-modules .file-tree {
+  padding: 15px;
+  grid-area: repl-file-tree;
+  overflow-y: auto;
+}
+
+.output-modules .file-tree-header {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.output-modules .file-tree-items a {
+  display: block;
+  margin: 4px 0px 2px 15px;
+  white-space: nowrap;
+}
+
+.output-modules .file-tree-items a:hover {
+  color: #0084ff;
+}
+
+.output-modules .file-modules {
+  padding: 15px 15px 15px 0;
+  grid-area: repl-file-text;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.output-modules .file-item {
+  scroll-margin-top: 15px;
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+}
+
+.output-modules .file-info {
+  font-weight: bold;
+  margin-bottom: 15px;
+  background-color: rgb(33 104 170 / 15%);
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+
+.output-modules .file-size {
+  font-weight: normal;
+  color: #0084ff;
+  padding-left: 8px;
+}
+
+.output-modules .file-text {
+  padding-left: 10px;
+  overflow-x: auto;
 }

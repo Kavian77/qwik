@@ -7,7 +7,7 @@ const update = async (version, options) => {
     type: 'result',
     outputHtml: '',
     clientModules: [],
-    serverModules: [],
+    ssrModules: [],
     diagnostics: [],
     docElementAttributes: {},
     headAttributes: {},
@@ -74,11 +74,13 @@ const bundleClient = async (options, result) => {
 
   const generated = await bundle.generate({});
 
-  result.clientModules = generated.output.map((o) => ({
-    path: o.fileName,
-    code: o.code,
-    isEntry: o.isDynamicEntry,
-  }));
+  result.clientModules = generated.output.map((o) =>
+    setFileSize({
+      path: o.fileName,
+      code: o.code,
+      isEntry: o.isDynamicEntry,
+    })
+  );
 
   console.timeEnd(`Bundle client`);
 };
@@ -113,13 +115,22 @@ const bundleSSR = async (options, result) => {
     inlineDynamicImports: true,
   });
 
-  result.serverModules = generated.output.map((o) => ({
-    path: o.fileName,
-    code: o.code,
-    isEntry: o.isDynamicEntry,
-  }));
+  result.ssrModules = generated.output.map((o) =>
+    setFileSize({
+      path: o.fileName,
+      code: o.code,
+      isEntry: o.isDynamicEntry,
+    })
+  );
 
   console.timeEnd(`Bundle ssr`);
+};
+
+const setFileSize = (m) => {
+  if (typeof m.code === 'string') {
+    m.size = `${m.code.length} B`;
+  }
+  return m;
 };
 
 const replResolver = (options, buildMode) => {
@@ -163,11 +174,13 @@ const replResolver = (options, buildMode) => {
 const renderHtml = async (result) => {
   console.time(`SSR Html`);
 
-  const serverTransformModule = result.serverModules.find((m) => m.path.endsWith('.js'));
-  const serverCode = serverTransformModule.code;
+  const ssrModule = result.ssrModules.find((m) => m.path.endsWith('.js'));
+  if (!ssrModule) {
+    return;
+  }
 
   const module = { exports: {} };
-  const runModule = new Function('module', 'exports', serverCode);
+  const runModule = new Function('module', 'exports', ssrModule.code);
   runModule(module, module.exports);
 
   const server = module.exports;
