@@ -224,7 +224,7 @@ const loadDependencies = async (version, options) => {
     !self.rollup ||
     self.qwikCore.version !== version ||
     self.qwikOptimizer.versions.qwik !== version ||
-    self.qwikServer.version !== version ||
+    self.qwikServer.versions.qwik !== version ||
     self.rollup.VERSION !== rollupVersion
   ) {
     console.time('Load dependencies');
@@ -331,8 +331,8 @@ const rollupVersion = '2.70.2';
 const prettierVersion = '2.6.2';
 const terserVersion = '5.12.1';
 
-const getNpmCdnUrl = (packageName, version, path) =>
-  new URL(`https://cdn.jsdelivr.net/npm/${packageName}${version ? '@' + version : ''}${path}`);
+const getNpmCdnUrl = (pkgName, pkgVersion, pkgPath) =>
+  new URL(`https://cdn.jsdelivr.net/npm/${pkgName}${pkgVersion ? '@' + pkgVersion : ''}${pkgPath}`);
 
 const getRuntimeBundle = (runtimeBundle) => {
   const exportKeys = Object.keys(self[runtimeBundle]);

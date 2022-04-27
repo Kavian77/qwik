@@ -11,7 +11,6 @@ export default defineConfig(() => {
   const pagesDir = resolve('pages');
 
   return {
-    clearScreen: false,
     plugins: [
       qwikVite(),
       qwest({
@@ -29,6 +28,7 @@ export default defineConfig(() => {
     optimizeDeps: {
       include: ['@builder.io/qwik'],
     },
+    clearScreen: false,
   };
 });
 

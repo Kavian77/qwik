@@ -48,7 +48,6 @@ export const Editor = component$((props: EditorProps) => {
 
 export interface EditorProps {
   ariaLabel: string;
-  editorId: string;
   inputs: TransformModuleInput[];
   lineNumbers: 'on' | 'off';
   onChange?: (value: string, ev: IModelContentChangedEvent) => void;

@@ -9,7 +9,6 @@ export const Repl = component$(async (props: ReplProps) => {
   useScopedStyles$(styles);
 
   const store = useStore<ReplStore>({
-    appId: props.appId,
     inputs: props.inputs || [],
     outputHtml: '',
     clientModules: [],
@@ -23,7 +22,7 @@ export const Repl = component$(async (props: ReplProps) => {
     minify: 'none',
     entryStrategy: 'single',
     ssrBuild: true,
-    debug: true,
+    debug: false,
     iframeUrl: 'about:blank',
   });
 
@@ -35,6 +34,25 @@ export const Repl = component$(async (props: ReplProps) => {
     }
   }
 
+  const postInputUpdate = () => {
+    const opts: ReplInputOptions = {
+      debug: store.debug,
+      srcInputs: store.inputs,
+      minify: store.minify,
+      entryStrategy: {
+        type: store.entryStrategy as any,
+      },
+    };
+
+    const data = {
+      type: 'update',
+      version: store.version,
+      options: opts,
+    };
+
+    window.replIframeWindow?.postMessage(JSON.stringify(data));
+  };
+
   if (isBrowser && !window.replClientInitialized) {
     window.replClientInitialized = true;
 
@@ -43,30 +61,11 @@ export const Repl = component$(async (props: ReplProps) => {
         window.replIframeWindow = ev.source as any;
         postInputUpdate();
       } else if (ev.data.type === 'result') {
-        updateReplState(ev.data);
+        updateOutput(ev.data);
       }
     };
 
-    const postInputUpdate = () => {
-      const opts: ReplInputOptions = {
-        debug: store.debug,
-        srcInputs: store.inputs,
-        minify: store.minify,
-        entryStrategy: {
-          type: store.entryStrategy as any,
-        },
-      };
-
-      const data = {
-        type: 'update',
-        version: store.version,
-        options: opts,
-      };
-
-      window.replIframeWindow?.postMessage(JSON.stringify(data));
-    };
-
-    const updateReplState = (result: ReplResult) => {
+    const updateOutput = (result: ReplResult) => {
       store.outputHtml = result.outputHtml;
       store.clientModules = result.clientModules;
       store.serverModules = result.serverModules;
@@ -148,11 +147,14 @@ export const Repl = component$(async (props: ReplProps) => {
         <Editor
           inputs={store.inputs}
           selectedPath={store.selectedInputPath}
-          onChange={(value, ev) => {
-            console.log('input change', value, ev);
+          onChange={(value) => {
+            const input = store.inputs.find((i) => i.path === store.selectedInputPath);
+            if (input) {
+              input.code = value;
+            }
+            postInputUpdate();
           }}
           qwikVersion={store.version}
-          editorId={store.appId + '-input'}
           ariaLabel="File Input"
           lineNumbers="on"
           readOnly={false}
