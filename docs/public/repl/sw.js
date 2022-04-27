@@ -43,8 +43,6 @@ const update = async (version, options) => {
 const bundleClient = async (options, result) => {
   console.time(`Bundle client`);
 
-  console.log('options.srcInputs', options.srcInputs);
-
   const qwikRollupPluginOpts = {
     buildMode: 'client',
     isDevBuild: true,
@@ -96,7 +94,6 @@ const bundleSSR = async (options, result) => {
     entryStrategy: options.entryStrategy,
     minify: options.minify,
     sourceMaps: false,
-    symbolsInput: result.symbolsEntryMap,
   };
 
   const rollupInputOpts = {
@@ -177,6 +174,7 @@ const renderHtml = async (result) => {
 
   const ssrResult = await server.render({
     base: '/repl/',
+    symbols: result.symbolsEntryMap,
   });
 
   const doc = self.qwikServer.createDocument({ html: ssrResult.html });

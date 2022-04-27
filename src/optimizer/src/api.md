@@ -243,8 +243,6 @@ export type SystemEnvironment = 'node' | 'deno' | 'webworker' | 'browsermain' | 
 //
 // @alpha (undocumented)
 export interface TransformFsOptions extends TransformOptions {
-    // (undocumented)
-    rootDir: string;
 }
 
 // @alpha (undocumented)
@@ -273,8 +271,6 @@ export interface TransformModuleInput {
 export interface TransformModulesOptions extends TransformOptions {
     // (undocumented)
     input: TransformModuleInput[];
-    // (undocumented)
-    rootDir: string;
 }
 
 // @alpha (undocumented)

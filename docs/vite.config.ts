@@ -26,6 +26,9 @@ export default defineConfig(() => {
       }),
       tutorialData(pagesDir),
     ],
+    optimizeDeps: {
+      include: ['@builder.io/qwik'],
+    },
   };
 });
 

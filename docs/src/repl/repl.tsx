@@ -1,7 +1,7 @@
 import { component$, Host, useScopedStyles$, useStore } from '@builder.io/qwik';
 import { isBrowser } from '@builder.io/qwik/build';
 import { CloseIcon } from '../components/svgs/close-icon';
-import { Monaco } from './monaco';
+import { Editor } from './editor';
 import styles from './repl.css?inline';
 import type { ReplInputOptions, ReplProps, ReplStore, ReplResult, ReplWindow } from './types';
 
@@ -9,6 +9,7 @@ export const Repl = component$(async (props: ReplProps) => {
   useScopedStyles$(styles);
 
   const store = useStore<ReplStore>({
+    appId: props.appId,
     inputs: props.inputs || [],
     outputHtml: '',
     clientModules: [],
@@ -144,7 +145,19 @@ export const Repl = component$(async (props: ReplProps) => {
       </div>
 
       <div class="input-panel">
-        <Monaco inputs={store.inputs} selectedPath={store.selectedInputPath} />
+        <Editor
+          inputs={store.inputs}
+          selectedPath={store.selectedInputPath}
+          onChange={(value, ev) => {
+            console.log('input change', value, ev);
+          }}
+          qwikVersion={store.version}
+          editorId={store.appId + '-input'}
+          ariaLabel="File Input"
+          lineNumbers="on"
+          readOnly={false}
+          wordWrap="off"
+        />
       </div>
 
       <div class="output-tabs repl-tabs">

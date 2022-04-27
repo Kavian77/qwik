@@ -196,7 +196,14 @@ export function createPlugin(optimizerOptions: OptimizerOptions = {}) {
         rootDir = opts.srcDir;
         log(`buildStart() srcDir`, opts.srcDir);
       } else if (Array.isArray(opts.srcInputs)) {
-        optimizer.sys.getInputFiles = async () => opts.srcInputs!;
+        optimizer.sys.getInputFiles = async (rootDir) =>
+          opts.srcInputs!.map((i) => {
+            const relInput: TransformModuleInput = {
+              path: optimizer.sys.path.relative(rootDir, i.path),
+              code: i.code,
+            };
+            return relInput;
+          });
         log(`buildStart() opts.srcInputs (${opts.srcInputs.length})`);
       }
 

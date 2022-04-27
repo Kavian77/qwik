@@ -168,6 +168,8 @@ async function postRendering(containerEl: Element, state: RenderingState, ctx: R
     }
   });
 
+  state.watchStagging.clear();
+
   // Wait for all promises
   await Promise.all(promises);
 

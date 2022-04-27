@@ -7,6 +7,7 @@ import type {
 } from '@builder.io/qwik/optimizer';
 
 export interface ReplProps {
+  appId: string;
   inputs?: TransformModuleInput[];
   selectedInputPath?: string;
   layout: 'narrow';
@@ -22,6 +23,7 @@ export interface ReplWindow extends Window {
 }
 
 export interface ReplStore {
+  appId: string;
   inputs: TransformModuleInput[];
   outputHtml: string;
   clientModules: TransformModule[];

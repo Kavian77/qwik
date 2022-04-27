@@ -4,6 +4,7 @@ import type { RenderToStringOptions, RenderToStringResult } from '../../../serve
 import {
   BasePluginOptions,
   createPlugin,
+  NormalizedQwikPluginConfig,
   parseId,
   QwikPluginOptions,
   QWIK_CORE_ID,
@@ -11,7 +12,7 @@ import {
   SYMBOLS_MANIFEST_FILENAME,
 } from './plugin';
 import { createRollupError } from './rollup';
-import { QWIK_LOADER_DEFAULT_MINIFIED } from '../scripts';
+import { QWIK_LOADER_DEFAULT_DEBUG, QWIK_LOADER_DEFAULT_MINIFIED } from '../scripts';
 
 /**
  * @alpha
@@ -185,7 +186,8 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
         return null;
       }
       if (isClientOnly && id === VITE_CLIENT_MODULE) {
-        return getViteDevModule();
+        const opts = qwikPlugin.getOptions();
+        return getViteDevModule(opts);
       }
       return qwikPlugin.load(id);
     },
@@ -413,7 +415,11 @@ function updateEntryDev(code: string) {
   return code;
 }
 
-function getViteDevModule() {
+function getViteDevModule(opts: NormalizedQwikPluginConfig) {
+  const qwikLoader = JSON.stringify(
+    opts.debug ? QWIK_LOADER_DEFAULT_DEBUG : QWIK_LOADER_DEFAULT_MINIFIED
+  );
+
   return `// Qwik Vite Dev Module
 import { render as qwikRender } from '@builder.io/qwik';
 
@@ -430,7 +436,7 @@ export function render(document, rootNode) {
   if (!qwikLoader) {
     qwikLoader = document.createElement('script');
     qwikLoader.id = 'qwikloader';
-    qwikLoader.innerHTML = ${JSON.stringify(QWIK_LOADER_DEFAULT_MINIFIED)};
+    qwikLoader.innerHTML = ${qwikLoader};
     document.head.appendChild(qwikLoader);
   }
 
