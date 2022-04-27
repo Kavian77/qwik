@@ -7,7 +7,6 @@ export const initMonacoEditor = async (
   props: EditorProps,
   store: EditorStore
 ) => {
-  // initialize
   const [monaco, deps] = await Promise.all([getMonaco(), loadDeps(props.qwikVersion)]);
   const ts = monaco.languages.typescript;
 
@@ -51,13 +50,9 @@ export const initMonacoEditor = async (
   });
 
   if (!props.readOnly && typeof props.onChange === 'function') {
-    const onChange = props.onChange;
     store.onChangeSubscription = noSerialize(
-      editor.onDidChangeModelContent((ev) => {
-        clearTimeout(store.onChangeDebounce);
-        store.onChangeDebounce = setTimeout(() => {
-          onChange(editor.getValue(), ev);
-        }, 50);
+      editor.onDidChangeModelContent(() => {
+        props.onChange!(props.selectedPath, editor.getValue());
       })
     );
   }
@@ -119,6 +114,7 @@ export const updateMonacoEditor = async (props: EditorProps, store: EditorStore)
 
 const getMonaco = async (): Promise<Monaco> => {
   if (!monacoCtx.loader) {
+    // lazy-load the monaco AMD script ol' school
     monacoCtx.loader = new Promise<Monaco>((resolve, reject) => {
       const script = document.createElement('script');
       script.addEventListener('error', reject);

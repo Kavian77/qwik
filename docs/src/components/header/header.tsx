@@ -26,8 +26,8 @@ export const Header = component$(
 
     return (
       <Host className="fixed top-0 z-40 w-full h-[56px]">
-        <div class="max-w-[1400px] mx-auto">
-          <div className="fixed top-[13px] left-[max(0px,calc(50%-45rem))] pl-4">
+        <div class="header-inner">
+          <div className="header-logo">
             <a href="/" class="hover:opacity-70">
               <span className="sr-only">Qwik Homepage</span>
               <QwikLogo width={110} height={35} />
@@ -53,7 +53,7 @@ export const Header = component$(
               </a>
             </li>
             <li>
-              <a href="https://qwik-playground.builder.io/" target="_blank" onClickQrl={closeMenu}>
+              <a href="/playground" onClickQrl={closeMenu}>
                 <span>Playground</span>
               </a>
             </li>

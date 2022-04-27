@@ -5,20 +5,17 @@ import type {
   TransformModuleInput,
   TransformModule,
 } from '@builder.io/qwik/optimizer';
+import type { NoSerialize } from '../../../../dist-dev/@builder.io-qwik/core';
 
 export interface ReplProps {
   inputs?: TransformModuleInput[];
   selectedInputPath?: string;
-  layout: 'narrow';
+  layout: 'narrow' | 'wide';
+  enableFileDelete?: boolean;
 }
 
 export interface ReplInputOptions extends Omit<QwikRollupPluginOptions, 'srcDir'> {
   srcInputs: TransformModuleInput[];
-}
-
-export interface ReplWindow extends Window {
-  replClientInitialized: boolean;
-  replIframeWindow: Window;
 }
 
 export interface ReplStore {
@@ -36,7 +33,9 @@ export interface ReplStore {
   entryStrategy: string;
   version: string;
   debug: boolean;
+  enableFileDelete?: boolean;
   iframeUrl: string;
+  iframeWindow: NoSerialize<MessageEventSource> | null;
 }
 
 export interface ReplResult {

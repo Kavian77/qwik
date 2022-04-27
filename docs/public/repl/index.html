@@ -73,12 +73,12 @@
               swRegistration = reg;
               if (swRegistration.active) {
                 navigator.serviceWorker.addEventListener('message', receiveMessageFromSw);
-                sendMessageToMain({ type: 'qwikReplReady' });
+                sendMessageToMain({ type: 'replready' });
               } else if (swRegistration.installing) {
                 swRegistration.installing.addEventListener('statechange', (ev) => {
                   if (ev.target.state == 'activated') {
                     navigator.serviceWorker.addEventListener('message', receiveMessageFromSw);
-                    sendMessageToMain({ type: 'qwikReplReady' });
+                    sendMessageToMain({ type: 'replready' });
                   }
                 });
               }

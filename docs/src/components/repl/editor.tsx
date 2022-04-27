@@ -9,7 +9,7 @@ import {
 } from '@builder.io/qwik';
 import type { TransformModuleInput } from '@builder.io/qwik/optimizer';
 import { ICodeEditorViewState, initMonacoEditor, updateMonacoEditor } from './monaco';
-import type { IModelContentChangedEvent, IStandaloneCodeEditor } from './monaco';
+import type { IStandaloneCodeEditor } from './monaco';
 import { isBrowser } from '@builder.io/qwik/build';
 
 export const Editor = component$((props: EditorProps) => {
@@ -19,7 +19,6 @@ export const Editor = component$((props: EditorProps) => {
     editor: undefined,
     onChangeDebounce: undefined,
     onChangeSubscription: undefined,
-    resizeDebounce: undefined,
     viewStates: noSerialize({}),
   });
 
@@ -27,11 +26,10 @@ export const Editor = component$((props: EditorProps) => {
     track(props, 'inputs');
     track(props, 'selectedPath');
 
-    if (!store.editor) {
-      await initMonacoEditor(hostElm, props, store);
-    }
-
     if (isBrowser) {
+      if (!store.editor) {
+        await initMonacoEditor(hostElm, props, store);
+      }
       await updateMonacoEditor(props, store);
     }
   });
@@ -50,7 +48,7 @@ export interface EditorProps {
   ariaLabel: string;
   inputs: TransformModuleInput[];
   lineNumbers: 'on' | 'off';
-  onChange?: (value: string, ev: IModelContentChangedEvent) => void;
+  onChange?: (path: string, code: string) => void;
   readOnly: boolean;
   selectedPath: string;
   wordWrap: 'on' | 'off';
@@ -61,6 +59,5 @@ export interface EditorStore {
   editor: NoSerialize<IStandaloneCodeEditor>;
   onChangeDebounce: NoSerialize<any>;
   onChangeSubscription: NoSerialize<any>;
-  resizeDebounce: NoSerialize<any>;
   viewStates: NoSerialize<Record<string, ICodeEditorViewState>>;
 }

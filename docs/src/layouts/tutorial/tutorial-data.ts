@@ -1,4 +1,4 @@
-import { TransformModuleInput } from '@builder.io/qwik/optimizer';
+import type { TransformModuleInput } from '@builder.io/qwik/optimizer';
 
 export interface TutorialSection {
   title: string;

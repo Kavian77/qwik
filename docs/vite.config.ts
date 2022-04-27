@@ -5,6 +5,7 @@ import { qwest } from './qwest/dist/vite/index.mjs';
 import { partytownVite } from '@builder.io/partytown/utils';
 import { readdirSync, readFileSync, statSync } from 'fs';
 import type { TutorialSection } from './src/layouts/tutorial/tutorial-data';
+import type { PlaygroundApp } from './src/layouts/playground/playground-data';
 import { PluginContext } from 'rollup';
 
 export default defineConfig(() => {
@@ -23,6 +24,7 @@ export default defineConfig(() => {
       partytownVite({
         dest: resolve('dist', '~partytown'),
       }),
+      playgroundData(pagesDir),
       tutorialData(pagesDir),
     ],
     optimizeDeps: {
@@ -31,6 +33,59 @@ export default defineConfig(() => {
     clearScreen: false,
   };
 });
+
+function playgroundData(pagesDir: string): Plugin {
+  const playgroundDir = join(pagesDir, 'playground');
+  const playgroundMenuSrc = readFileSync(join(playgroundDir, 'playground-menu.json'), 'utf-8');
+
+  const loadPlaygroundData = (ctx: PluginContext) => {
+    const menuApps: PlaygroundApp[] = JSON.parse(playgroundMenuSrc);
+    ctx.addWatchFile(playgroundMenuSrc);
+
+    const apps: PlaygroundApp[] = [];
+
+    try {
+      for (const menuApp of menuApps) {
+        const appDir = join(playgroundDir, menuApp.id);
+
+        const app: PlaygroundApp = {
+          id: menuApp.id,
+          title: menuApp.title,
+          inputs: readdirSync(appDir).map((fileName) => {
+            const filePath = join(appDir, fileName);
+            const input: TransformModuleInput = {
+              path: '/' + fileName,
+              code: readFileSync(filePath, 'utf-8'),
+            };
+            ctx.addWatchFile(filePath);
+            return input;
+          }),
+        };
+
+        if (app.inputs.length > 0) {
+          apps.push(app);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    return apps;
+  };
+
+  return {
+    name: 'playgroundData',
+
+    async load(id) {
+      const filename = basename(id);
+      if (filename === 'playground-data.ts') {
+        const data = loadPlaygroundData(this);
+        return `const playgroundApps = ${JSON.stringify(data)};export default playgroundApps;`;
+      }
+      return null;
+    },
+  };
+}
 
 function tutorialData(pagesDir: string): Plugin {
   const tutorialDir = join(pagesDir, 'tutorial');
