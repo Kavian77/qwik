@@ -1,11 +1,4 @@
-import {
-  component$,
-  Host,
-  useHostElement,
-  useScopedStyles$,
-  useStore,
-  useWatchEffect$,
-} from '@builder.io/qwik';
+import { component$, Host, useHostElement, useScopedStyles$, useStore } from '@builder.io/qwik';
 import type { TransformModuleInput } from '@builder.io/qwik/optimizer';
 import type { SiteStore } from '../../components/app/app';
 import { Repl } from '../../components/repl/repl';
@@ -24,13 +17,12 @@ const Playground = component$((props: PlaygroundLayoutProps) => {
   const store = useStore<PlaygroundStore>({
     title: '',
     inputs: [],
+    version: '',
   });
 
-  useWatchEffect$(() => {
-    const helloWorldApp = playgroundApps.find((p) => p.id === 'hello-world')!;
-    store.title = helloWorldApp.title;
-    store.inputs = helloWorldApp.inputs;
-  });
+  const helloWorldApp = playgroundApps.find((p) => p.id === 'hello-world')!;
+  store.title = helloWorldApp.title;
+  store.inputs = helloWorldApp.inputs;
 
   setHeadMeta(hostElm, { title: `${store.title} - Qwik Playground` });
 
@@ -45,9 +37,8 @@ const Playground = component$((props: PlaygroundLayoutProps) => {
   return (
     <Host class="full-width playground">
       <Header store={props.store} />
-      <main>
-        <Repl inputs={store.inputs} layout="wide" enableFileDelete={true} />
-      </main>
+      <div class="playground-header"></div>
+      <Repl inputs={store.inputs} enableFileDelete={true} version={store.version} />
     </Host>
   );
 });
@@ -55,6 +46,7 @@ const Playground = component$((props: PlaygroundLayoutProps) => {
 interface PlaygroundStore {
   title: string;
   inputs: TransformModuleInput[];
+  version: string;
 }
 
 export default Playground;

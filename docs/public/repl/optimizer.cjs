@@ -5,7 +5,7 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://github.com/BuilderIO/qwik/blob/main/LICENSE
  */
- if ("undefined" == typeof globalThis) {
+if ("undefined" == typeof globalThis) {
   const g = "undefined" != typeof global ? global : "undefined" != typeof window ? window : "undefined" != typeof self ? self : {};
   g.globalThis = g;
 }
@@ -1126,18 +1126,25 @@ globalThis.qwikOptimizer = function(module) {
             });
           }
           const symbolsEntryMap = await outputAnalyzer.generateSymbolsEntryMap();
-          "function" === typeof opts.symbolsOutput ? await opts.symbolsOutput(symbolsEntryMap) : this.emitFile({
+          
+          "function" === typeof opts.symbolsOutput && await opts.symbolsOutput(symbolsEntryMap);
+          this.emitFile({
             type: "asset",
             fileName: SYMBOLS_MANIFEST_FILENAME,
             source: JSON.stringify(symbolsEntryMap, null, 2)
           });
           "function" === typeof opts.transformedModuleOutput && await opts.transformedModuleOutput(qwikPlugin.getTransformedOutputs());
-        } else if ("ssr" === opts.buildMode && opts.symbolsInput) {
+        } else if ("ssr" === opts.buildMode && opts.symbolsInput && "object" === typeof opts.symbolsInput) {
           const symbolsStr = JSON.stringify(opts.symbolsInput);
           for (const fileName in rollupBundle) {
             const b = rollupBundle[fileName];
             "chunk" === b.type && (b.code = qwikPlugin.updateSymbolsEntryMap(symbolsStr, b.code));
           }
+          this.emitFile({
+            type: "asset",
+            fileName: SYMBOLS_MANIFEST_FILENAME,
+            source: JSON.stringify(opts.symbolsInput, null, 2)
+          });
         }
       }
     };
@@ -1294,7 +1301,8 @@ globalThis.qwikOptimizer = function(module) {
             });
           }
           const symbolsEntryMap = await outputAnalyzer.generateSymbolsEntryMap();
-          "function" === typeof opts.symbolsOutput ? await opts.symbolsOutput(symbolsEntryMap) : this.emitFile({
+          "function" === typeof opts.symbolsOutput && await opts.symbolsOutput(symbolsEntryMap);
+          this.emitFile({
             type: "asset",
             fileName: SYMBOLS_MANIFEST_FILENAME,
             source: JSON.stringify(symbolsEntryMap, null, 2)
@@ -1310,12 +1318,17 @@ globalThis.qwikOptimizer = function(module) {
               symbolsInput = JSON.parse(qSymbolsContent);
             } catch (e) {}
           }
-          if (symbolsInput) {
+          if (symbolsInput && "object" === typeof symbolsInput) {
             const symbolsStr = JSON.stringify(symbolsInput);
             for (const fileName in rollupBundle) {
               const b = rollupBundle[fileName];
               "chunk" === b.type && (b.code = qwikPlugin.updateSymbolsEntryMap(symbolsStr, b.code));
             }
+            this.emitFile({
+              type: "asset",
+              fileName: SYMBOLS_MANIFEST_FILENAME,
+              source: JSON.stringify(symbolsInput, null, 2)
+            });
           }
         }
       },

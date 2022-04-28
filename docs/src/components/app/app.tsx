@@ -22,7 +22,7 @@ export const App = component$(() => {
         'menu-open': store.sideMenuOpen,
       }}
     >
-      <Page store={store} />asdfsadf
+      <Page store={store} /> 
     </Host>
   );
 });

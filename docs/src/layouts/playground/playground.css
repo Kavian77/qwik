@@ -1,81 +1,28 @@
 .playground {
   position: fixed;
-  top: 56px;
+  top: var(--header-height);
   width: 100%;
-  height: 100vh;
+  height: cal(100vh - var(--header-height));
+
+  --playground-header-height: 36px;
 }
 
-.tutorial main {
+.playground .repl {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-areas: 'content-panel repl-panel';
-  height: 100%;
-}
-
-.repl-panel {
-  grid-area: repl-panel;
-}
-
-.content-panel {
-  grid-area: content-panel;
-  position: relative;
-
-  background-color: #eee;
-  color: rgb(37, 37, 37);
-
-  display: grid;
-  grid-template-rows: 46px 1fr 46px;
+  grid-template-rows: var(--repl-tab-height) 1fr;
   grid-template-areas:
-    'content-header'
-    'content-main'
-    'content-footer';
-  height: calc(100vh - 56px);
+    'repl-input-tabs repl-output-tabs'
+    'repl-input-panel repl-output-panel';
+  top: calc(var(--header-height) + var(--playground-header-height));
+  height: calc(100vh - var(--header-height) - var(--playground-header-height));
 }
 
-.content-header {
-  grid-area: content-header;
-  position: relative;
-  background-color: rgb(183, 183, 183);
+.playground-header {
+  height: var(--playground-header-height);
+  background-color: #2a354d;
 }
 
-.content-header svg {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-}
-
-.content-header select {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.0001;
-  cursor: pointer;
-  -webkit-appearance: none;
-}
-
-.content-header h1 {
-  display: block;
-  font-size: 18px;
-  font-weight: bold;
-  padding: 8px 4px 6px 42px;
-}
-
-.content-main {
-  grid-area: content-main;
-  padding: 15px;
-  overflow-y: auto;
-}
-
-.content-footer {
-  grid-area: content-footer;
-  padding: 10px 15px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background-color: rgb(183, 183, 183);
-}
-
-.content-footer nav {
-  text-align: right;
+.playground .input-panel {
+  border-right: 1px solid var(--repl-tab-bg-color);
 }

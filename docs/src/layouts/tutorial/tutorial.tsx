@@ -59,7 +59,8 @@ const Tutorial = component$((props: TutorialLayoutProps) => {
           <TutorialContentFooter currentItem={currentItem} />
         </div>
         <div class="repl-panel">
-          <Repl inputs={currentItem.inputs} layout="narrow" />
+          <Repl inputs={currentItem.inputs} />
+          <div class="tutorial-repl-footer" />
         </div>
       </main>
     </Host>

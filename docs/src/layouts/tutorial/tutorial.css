@@ -1,8 +1,24 @@
 .tutorial {
   position: fixed;
-  top: 56px;
+  top: var(--header-height);
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - var(--header-height));
+}
+
+.tutorial .repl {
+  display: grid;
+  grid-template-rows: var(--repl-tab-height) 1fr var(--repl-tab-height) 1fr;
+  grid-template-areas:
+    'repl-input-tabs'
+    'repl-input-panel'
+    'repl-output-tabs'
+    'repl-output-panel';
+  height: calc(100vh - var(--header-height) - var(--repl-tab-height));
+}
+
+.tutorial-repl-footer {
+  height: var(--repl-tab-height);
+  background: var(--repl-tab-bg-color);
 }
 
 .tutorial main {
@@ -24,18 +40,18 @@
   color: rgb(37, 37, 37);
 
   display: grid;
-  grid-template-rows: 46px 1fr 46px;
+  grid-template-rows: var(--repl-tab-height) 1fr var(--repl-tab-height);
   grid-template-areas:
     'content-header'
     'content-main'
     'content-footer';
-  height: calc(100vh - 56px);
+  height: calc(100vh - var(--header-height));
 }
 
 .content-header {
   grid-area: content-header;
   position: relative;
-  background-color: rgb(183, 183, 183);
+  background-color: var(--repl-tab-bg-color);
 }
 
 .content-header svg {
@@ -73,7 +89,7 @@
   padding: 10px 15px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background-color: rgb(183, 183, 183);
+  background-color: var(--repl-tab-bg-color);
 }
 
 .content-footer nav {

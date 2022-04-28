@@ -9,6 +9,16 @@
   -webkit-touch-callout: none;
 }
 
+html {
+  --header-height: 56px;
+  --repl-tab-height: 40px;
+  --repl-tab-bg-color: rgb(183, 183, 183);
+  --repl-tab-active-bg: white;
+  --repl-tab-hover-bg: rgb(223, 223, 223);
+  --repl-tab-active-highlight: #0084ff;
+  --repl-tab-hover-highlight: #0084ff75;
+}
+
 a,
 button,
 textarea,

@@ -2,7 +2,7 @@ import { Editor } from './editor';
 import { ReplTabButton } from './repl-tab-button';
 import type { ReplStore } from './types';
 
-export const ReplInputPanel = ({ store, onInputChange }: ReplInputPanelProps) => {
+export const ReplInputPanel = ({ store, onInputChange, onInputDelete }: ReplInputPanelProps) => {
   return (
     <>
       <div class="input-tabs repl-tabs">
@@ -14,12 +14,10 @@ export const ReplInputPanel = ({ store, onInputChange }: ReplInputPanelProps) =>
               store.selectedInputPath = input.path;
             }}
             onDelete$={() => {
-              store.inputs = store.inputs.filter((i) => i.path !== input.path);
-              if (store.selectedInputPath === input.path) {
-                if (store.inputs.length > 0) {
-                  store.selectedInputPath = store.inputs[0].path;
-                } else {
-                  store.selectedInputPath = '';
+              if (store.enableFileDelete) {
+                const shouldDelete = confirm(`Are you sure you want to delete "${input.path}"?`);
+                if (shouldDelete) {
+                  onInputDelete(input.path);
                 }
               }
             }}
@@ -54,4 +52,5 @@ const formatFilePath = (path: string) => {
 interface ReplInputPanelProps {
   store: ReplStore;
   onInputChange: (path: string, code: string) => void;
+  onInputDelete: (path: string) => void;
 }

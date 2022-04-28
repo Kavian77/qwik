@@ -226,13 +226,13 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
         const symbolsEntryMap = await outputAnalyzer.generateSymbolsEntryMap();
         if (typeof opts.symbolsOutput === 'function') {
           await opts.symbolsOutput(symbolsEntryMap);
-        } else {
-          this.emitFile({
-            type: 'asset',
-            fileName: SYMBOLS_MANIFEST_FILENAME,
-            source: JSON.stringify(symbolsEntryMap, null, 2),
-          });
         }
+
+        this.emitFile({
+          type: 'asset',
+          fileName: SYMBOLS_MANIFEST_FILENAME,
+          source: JSON.stringify(symbolsEntryMap, null, 2),
+        });
 
         if (typeof opts.transformedModuleOutput === 'function') {
           await opts.transformedModuleOutput(qwikPlugin.getTransformedOutputs());
@@ -255,7 +255,7 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
           }
         }
 
-        if (symbolsInput) {
+        if (symbolsInput && typeof symbolsInput === 'object') {
           const symbolsStr = JSON.stringify(symbolsInput);
           for (const fileName in rollupBundle) {
             const b = rollupBundle[fileName];
@@ -263,6 +263,12 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
               b.code = qwikPlugin.updateSymbolsEntryMap(symbolsStr, b.code);
             }
           }
+
+          this.emitFile({
+            type: 'asset',
+            fileName: SYMBOLS_MANIFEST_FILENAME,
+            source: JSON.stringify(symbolsInput, null, 2),
+          });
         }
       }
     },

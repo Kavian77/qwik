@@ -25,7 +25,6 @@ export const Repl = component$(async (props: ReplProps) => {
     selectedOutputPanel: 'app',
     selectedClientModule: '',
     selectedSsrModule: '',
-    version: '0.0.19-0',
     minify: 'none',
     entryStrategy: 'single',
     ssrBuild: true,
@@ -33,6 +32,7 @@ export const Repl = component$(async (props: ReplProps) => {
     enableFileDelete: props.enableFileDelete,
     iframeUrl: 'about:blank',
     iframeWindow: null,
+    version: props.version || '0.0.19-0',
   });
 
   if (!store.selectedInputPath) {
@@ -48,6 +48,17 @@ export const Repl = component$(async (props: ReplProps) => {
     if (input) {
       input.code = code;
       postReplInputUpdate();
+    }
+  };
+
+  const onInputDelete = (path: string) => {
+    store.inputs = store.inputs.filter((i) => i.path !== path);
+    if (store.selectedInputPath === path) {
+      if (store.inputs.length > 0) {
+        store.selectedInputPath = store.inputs[0].path;
+      } else {
+        store.selectedInputPath = '';
+      }
     }
   };
 
@@ -128,18 +139,9 @@ export const Repl = component$(async (props: ReplProps) => {
   });
 
   return (
-    <Host
-      class={{
-        repl: true,
-        'repl-narrow': props.layout === 'narrow',
-        'repl-wide': props.layout === 'wide',
-      }}
-    >
-      <ReplInputPanel store={store} onInputChange={onInputChange} />
-
+    <Host class="repl">
+      <ReplInputPanel store={store} onInputChange={onInputChange} onInputDelete={onInputDelete} />
       <ReplOutputPanel store={store} />
-
-      <div class="footer-panel"></div>
     </Host>
   );
 });

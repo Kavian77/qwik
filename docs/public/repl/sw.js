@@ -74,13 +74,8 @@ const bundleClient = async (options, result) => {
 
   const generated = await bundle.generate({});
 
-  result.clientModules = generated.output.map((o) =>
-    setFileSize({
-      path: o.fileName,
-      code: o.code,
-      isEntry: o.isDynamicEntry,
-    })
-  );
+  console.log(generated.output)
+  result.clientModules = generated.output.map(getOutput);
 
   console.timeEnd(`Bundle client`);
 };
@@ -96,6 +91,7 @@ const bundleSSR = async (options, result) => {
     entryStrategy: options.entryStrategy,
     minify: options.minify,
     sourceMaps: false,
+    symbolsInput: result.symbolsEntryMap
   };
 
   const rollupInputOpts = {
@@ -115,22 +111,26 @@ const bundleSSR = async (options, result) => {
     inlineDynamicImports: true,
   });
 
-  result.ssrModules = generated.output.map((o) =>
-    setFileSize({
-      path: o.fileName,
-      code: o.code,
-      isEntry: o.isDynamicEntry,
-    })
-  );
+  result.ssrModules = generated.output.map(getOutput);
 
   console.timeEnd(`Bundle ssr`);
 };
 
-const setFileSize = (m) => {
-  if (typeof m.code === 'string') {
-    m.size = `${m.code.length} B`;
+const getOutput = (o) => {
+  const f = {
+    path: o.fileName,
+    code: '',
+    isEntry: o.isDynamicEntry,
+  };
+  if (o.type === 'chunk') {
+    f.code = o.code || '';
+    f.isEntry = o.isDynamicEntry;
+  } else if (o.type === 'asset') {
+    f.code = o.source || '';
+    f.isEntry = false;
   }
-  return m;
+  f.size = `${f.code.length} B`;
+  return f;
 };
 
 const replResolver = (options, buildMode) => {

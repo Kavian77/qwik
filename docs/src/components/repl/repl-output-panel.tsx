@@ -66,7 +66,9 @@ export const ReplOutputPanel = ({ store }: ReplOutputPanelProps) => {
             'output-result': true,
           }}
         >
-          {store.selectedOutputPanel === 'outputHtml' ? <pre>{store.outputHtml}</pre> : null}
+          {store.selectedOutputPanel === 'outputHtml' ? (
+            <pre class="output-html">{store.outputHtml}</pre>
+          ) : null}
         </div>
         <div
           class={{

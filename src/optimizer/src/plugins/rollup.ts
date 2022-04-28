@@ -128,20 +128,20 @@ export function qwikRollup(qwikRollupOpts: QwikRollupPluginOptions = {}): any {
         const symbolsEntryMap = await outputAnalyzer.generateSymbolsEntryMap();
         if (typeof opts.symbolsOutput === 'function') {
           await opts.symbolsOutput(symbolsEntryMap);
-        } else {
-          this.emitFile({
-            type: 'asset',
-            fileName: SYMBOLS_MANIFEST_FILENAME,
-            source: JSON.stringify(symbolsEntryMap, null, 2),
-          });
         }
+
+        this.emitFile({
+          type: 'asset',
+          fileName: SYMBOLS_MANIFEST_FILENAME,
+          source: JSON.stringify(symbolsEntryMap, null, 2),
+        });
 
         if (typeof opts.transformedModuleOutput === 'function') {
           await opts.transformedModuleOutput(qwikPlugin.getTransformedOutputs());
         }
       } else if (opts.buildMode === 'ssr') {
         // ssr build
-        if (opts.symbolsInput) {
+        if (opts.symbolsInput && typeof opts.symbolsInput === 'object') {
           const symbolsStr = JSON.stringify(opts.symbolsInput);
           for (const fileName in rollupBundle) {
             const b = rollupBundle[fileName];
@@ -149,6 +149,12 @@ export function qwikRollup(qwikRollupOpts: QwikRollupPluginOptions = {}): any {
               b.code = qwikPlugin.updateSymbolsEntryMap(symbolsStr, b.code);
             }
           }
+
+          this.emitFile({
+            type: 'asset',
+            fileName: SYMBOLS_MANIFEST_FILENAME,
+            source: JSON.stringify(opts.symbolsInput, null, 2),
+          });
         }
       }
     },
