@@ -1,7 +1,7 @@
 import { useLocation } from '../../utils/useLocation';
 import tutorialSections, { TutorialApp } from './tutorial-data';
 
-export const TutorialContentHeader = ({ currentTutorial }: { currentTutorial: TutorialApp }) => {
+export const TutorialContentHeader = ({ current }: TutorialContentHeaderProps) => {
   const loc = useLocation();
 
   return (
@@ -26,7 +26,7 @@ export const TutorialContentHeader = ({ currentTutorial }: { currentTutorial: Tu
         {tutorialSections.map((s) => (
           <optgroup label={s.title}>
             {s.tutorials.map((t) => (
-              <option selected={t.id === currentTutorial.id} value={t.id}>
+              <option selected={t.id === current.id} value={t.id}>
                 {t.title}
               </option>
             ))}
@@ -34,7 +34,11 @@ export const TutorialContentHeader = ({ currentTutorial }: { currentTutorial: Tu
         ))}
       </select>
 
-      <h1>{currentTutorial.title}</h1>
+      <h1>{current.title}</h1>
     </div>
   );
 };
+
+interface TutorialContentHeaderProps {
+  current: TutorialApp;
+}

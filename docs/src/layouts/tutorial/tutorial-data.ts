@@ -1,4 +1,4 @@
-import type { TransformModuleInput } from '@builder.io/qwik/optimizer';
+import type { ReplModuleInput } from '../../components/repl/types';
 
 export interface TutorialSection {
   id: string;
@@ -9,8 +9,8 @@ export interface TutorialSection {
 export interface TutorialApp {
   id: string;
   title: string;
-  problemInputs: TransformModuleInput[];
-  solutionInputs: TransformModuleInput[];
+  problemInputs: ReplModuleInput[];
+  solutionInputs: ReplModuleInput[];
   enableHtmlOutput?: boolean;
   enableClientOutput?: boolean;
   enableSsrOutput?: boolean;

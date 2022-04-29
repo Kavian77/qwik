@@ -25,12 +25,12 @@ interface TutorialLayoutProps {
 const Tutorial = component$((props: TutorialLayoutProps) => {
   useScopedStyles$(styles);
 
-  const store = useStore<TutorialStore>({
-    inputs: [],
-  });
+  // const store = useStore<TutorialStore>({
+  //   inputs: [],
+  // });
 
   useWatchEffect$((track) => {
-    track(store, 'inputs');
+    // track(store, 'inputs');
 
     // why does this keep running?
     setHeadStyles(useHostElement(), [
@@ -51,19 +51,25 @@ const Tutorial = component$((props: TutorialLayoutProps) => {
     }
   };
 
-  const currentTutorial = getTutorialApp();
-  if (!currentTutorial) {
+  const current = getTutorialApp();
+  if (!current) {
     return <p>Unable to find tutorial: {loc.pathname}</p>;
   }
+  const tutorials: TutorialApp[] = [];
+  tutorialSections.forEach((s) => tutorials.push(...s.tutorials));
 
-  store.inputs = currentTutorial.problemInputs;
+  const currentIndex = tutorials.findIndex((i) => i.id === current.id);
+  const prev = tutorials[currentIndex - 1];
+  const next = tutorials[currentIndex + 1];
 
-  if (!store.inputs.some((i) => i.code === '/root.tsx')) {
-    store.inputs.push({ path: '/root.tsx', code: DEFAULT_ROOT, hidden: true });
+  const inputs = current.problemInputs;
+
+  if (!inputs.some((i) => i.code === '/root.tsx')) {
+    inputs.push({ path: '/root.tsx', code: DEFAULT_ROOT, hidden: true });
   }
 
-  if (!store.inputs.some((i) => i.code === '/entry.server.tsx')) {
-    store.inputs.push({ path: '/entry.server.tsx', code: DEFAULT_ENTRY_SERVER, hidden: true });
+  if (!inputs.some((i) => i.code === '/entry.server.tsx')) {
+    inputs.push({ path: '/entry.server.tsx', code: DEFAULT_ENTRY_SERVER, hidden: true });
   }
 
   return (
@@ -71,20 +77,27 @@ const Tutorial = component$((props: TutorialLayoutProps) => {
       <Header store={props.store} />
       <main>
         <div class="tutorial-content-panel">
-          <TutorialContentHeader currentTutorial={currentTutorial} />
+          <TutorialContentHeader current={current} />
           <div class="content-main">
             <div>
               <Slot />
+              {next ? (
+                <div class="next-link">
+                  <a href={`/tutorial/${next.id}`} class="next">
+                    Next: {next.title}
+                  </a>
+                </div>
+              ) : null}
             </div>
           </div>
-          <TutorialContentFooter currentTutorial={currentTutorial} store={store} />
+          <TutorialContentFooter current={current} next={next} prev={prev} />
         </div>
         <div class="tutorial-repl-panel">
           <Repl
-            inputs={store.inputs}
-            enableHtmlOutput={currentTutorial.enableHtmlOutput}
-            enableClientOutput={currentTutorial.enableClientOutput}
-            enableSsrOutput={currentTutorial.enableSsrOutput}
+            inputs={inputs}
+            enableHtmlOutput={current.enableHtmlOutput}
+            enableClientOutput={current.enableClientOutput}
+            enableSsrOutput={current.enableSsrOutput}
           />
           <div class="tutorial-repl-footer" />
         </div>
@@ -119,7 +132,3 @@ export const Root = () => {
 `;
 
 export default Tutorial;
-
-export interface TutorialStore {
-  inputs: ReplModuleInput[];
-}

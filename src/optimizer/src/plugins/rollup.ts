@@ -51,7 +51,7 @@ export function qwikRollup(qwikRollupOpts: QwikRollupPluginOptions = {}): any {
       if (opts.buildMode === 'ssr') {
         // Server output
         if (!outputOpts.dir) {
-          outputOpts.dir = opts.outClientDir;
+          outputOpts.dir = opts.outServerDir;
         }
         if (!outputOpts.format) {
           outputOpts.format = 'cjs';
@@ -59,7 +59,7 @@ export function qwikRollup(qwikRollupOpts: QwikRollupPluginOptions = {}): any {
       } else {
         // Client output
         if (!outputOpts.dir) {
-          outputOpts.dir = opts.outServerDir;
+          outputOpts.dir = opts.outClientDir;
         }
         if (!outputOpts.format) {
           outputOpts.format = 'es';

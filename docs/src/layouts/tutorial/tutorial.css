@@ -90,9 +90,18 @@
   overflow-y: auto;
 }
 
+.content-main a {
+  color: #0084ff;
+  text-decoration: underline;
+}
+
+.content-main a:hover {
+  text-decoration: none;
+}
+
 .content-footer {
   grid-area: content-footer;
-  padding: 8px 15px;
+  padding: 7px 15px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   background-color: var(--repl-tab-bg-color);
@@ -100,4 +109,25 @@
 
 .content-footer nav {
   text-align: right;
+}
+
+.next-link {
+  margin-top: 20px;
+}
+
+.nav-link {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 5px;
+  background: rgb(140 140 140);
+  color: white;
+  margin: 0 0 0 15px;
+  border: 1px solid transparent;
+  font-size: 14px;
+}
+
+.nav-link:hover {
+  background: white;
+  color: rgb(140 140 140);
+  border: 1px solid rgb(140 140 140);
 }

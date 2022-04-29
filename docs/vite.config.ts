@@ -3,15 +3,24 @@ import { qwikVite, TransformModuleInput } from '@builder.io/qwik/optimizer';
 import { resolve, join, basename } from 'path';
 import { qwest } from './qwest/dist/vite/index.mjs';
 import { partytownVite } from '@builder.io/partytown/utils';
-import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
 import type { TutorialApp, TutorialSection } from './src/layouts/tutorial/tutorial-data';
 import type { PlaygroundApp } from './src/layouts/playground/playground-data';
 import { PluginContext } from 'rollup';
+import esbuild from 'esbuild';
 
 export default defineConfig(() => {
   const pagesDir = resolve('pages');
 
   return {
+    build: {
+      rollupOptions: {
+        input: [
+          resolve('src', 'components', 'app', 'app.tsx'),
+          resolve('src', 'components', 'repl', 'worker', 'repl-service-worker.tsx'),
+        ],
+      },
+    },
     plugins: [
       qwikVite(),
       qwest({
@@ -26,6 +35,7 @@ export default defineConfig(() => {
       }),
       playgroundData(pagesDir),
       tutorialData(pagesDir),
+      replServiceWorker(),
     ],
     optimizeDeps: {
       include: ['@builder.io/qwik'],
@@ -154,6 +164,11 @@ function tutorialData(pagesDir: string): Plugin {
           if (inputs.length === 0) {
             throw new Error(`Tutorial "${appType}" dir "${appDir}" does not have any valid files.`);
           }
+          if (!inputs.some((i) => i.path === '/app.tsx')) {
+            throw new Error(
+              `Tutorials must have an "app.tsx" file, which wasn't found in "${appType}" dir "${appDir}".`
+            );
+          }
           return inputs;
         };
 
@@ -187,6 +202,53 @@ function tutorialData(pagesDir: string): Plugin {
         return `const tutorials = ${JSON.stringify(data)};export default tutorials;`;
       }
       return null;
+    },
+  };
+}
+
+function replServiceWorker(): Plugin {
+  return {
+    name: 'replServiceWorker',
+
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.url === '/repl/repl-sw.js') {
+          try {
+            const swPath = resolve('src', 'components', 'repl', 'worker', 'repl-service-worker.ts');
+
+            const result = await esbuild.build({
+              entryPoints: [swPath],
+              bundle: true,
+              format: 'iife',
+              write: false,
+            });
+
+            res.setHeader('Content-Type', 'application/javascript');
+            res.writeHead(200);
+
+            res.write(result.outputFiles![0].text);
+            res.end();
+            return;
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        next();
+      });
+    },
+
+    generateBundle(opts, bundles) {
+      if (opts.format === 'es') {
+        for (const f in bundles) {
+          const bundle = bundles[f];
+          if (bundle.type === 'chunk') {
+            if (bundle.name === 'repl-service-worker') {
+              const distPath = resolve('dist', 'repl', 'repl-sw.js');
+              writeFileSync(distPath, bundle.code);
+            }
+          }
+        }
+      }
     },
   };
 }

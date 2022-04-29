@@ -1,14 +1,6 @@
-import type { TutorialStore } from './tutorial';
-import tutorialSections, { TutorialApp } from './tutorial-data';
+import type { TutorialApp } from './tutorial-data';
 
-export const TutorialContentFooter = ({ currentTutorial, store }: TutorialContentFooterProps) => {
-  const tutorials: TutorialApp[] = [];
-  tutorialSections.forEach((s) => tutorials.push(...s.tutorials));
-
-  const currentIndex = tutorials.findIndex((i) => i.id === currentTutorial.id);
-  const prev = tutorials[currentIndex - 1];
-  const next = tutorials[currentIndex + 1];
-
+export const TutorialContentFooter = ({ current, prev, next }: TutorialContentFooterProps) => {
   return (
     <div class="content-footer">
       <div>
@@ -16,7 +8,7 @@ export const TutorialContentFooter = ({ currentTutorial, store }: TutorialConten
           class="show-me"
           onClick$={() => {
             // why doesn't this work?
-            store.inputs = currentTutorial.solutionInputs;
+            // store.inputs = current.solutionInputs;
           }}
         >
           Show Me
@@ -24,13 +16,13 @@ export const TutorialContentFooter = ({ currentTutorial, store }: TutorialConten
       </div>
       <nav>
         {prev ? (
-          <a href={`/tutorial/${prev.id}`} class="prev">
-            Previous
+          <a title={prev.title} href={`/tutorial/${prev.id}`} class="nav-link prev">
+            &lt; Previous
           </a>
         ) : null}
         {next ? (
-          <a href={`/tutorial/${next.id}`} class="next">
-            Next
+          <a title={next.title} href={`/tutorial/${next.id}`} class="nav-link next">
+            Next &gt;
           </a>
         ) : null}
       </nav>
@@ -39,6 +31,7 @@ export const TutorialContentFooter = ({ currentTutorial, store }: TutorialConten
 };
 
 interface TutorialContentFooterProps {
-  currentTutorial: TutorialApp;
-  store: TutorialStore;
+  current: TutorialApp;
+  prev?: TutorialApp;
+  next?: TutorialApp;
 }

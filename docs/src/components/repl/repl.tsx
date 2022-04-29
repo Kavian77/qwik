@@ -11,7 +11,13 @@ import { isBrowser } from '@builder.io/qwik/build';
 import { ReplInputPanel } from './repl-input-panel';
 import { ReplOutputPanel } from './repl-output-panel';
 import styles from './repl.css?inline';
-import type { ReplInputOptions, ReplStore, ReplResult, ReplModuleInput } from './types';
+import type {
+  ReplInputOptions,
+  ReplStore,
+  ReplResult,
+  ReplModuleInput,
+  ReplMessageEvent,
+} from './types';
 import { ReplDetailPanel } from './repl-detail-panel';
 
 export const Repl = component$(async (props: ReplProps) => {
@@ -78,14 +84,14 @@ export const Repl = component$(async (props: ReplProps) => {
       },
     };
 
-    const data = {
+    const replMsg: ReplMessageEvent = {
       type: 'update',
       version: store.version,
       options: opts,
     };
 
     if (store.iframeWindow && opts.srcInputs.length > 0) {
-      store.iframeWindow.postMessage(JSON.stringify(data));
+      store.iframeWindow.postMessage(JSON.stringify(replMsg));
     }
   };
 

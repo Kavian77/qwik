@@ -52,9 +52,13 @@
         let swRegistration = null;
         const receiveMessageFromMainApp = (ev) => {
           if (swRegistration.active) {
-            const evData = JSON.parse(ev.data);
-            evData.location = location.href;
-            swRegistration.active.postMessage(evData);
+            try {
+              const evData = JSON.parse(ev.data);
+              evData.location = location.href;
+              swRegistration.active.postMessage(evData);
+            } catch (e) {
+              console.error('receiveMessageFromMainApp', e, ev.data);
+            }
           }
         };
 
@@ -65,7 +69,7 @@
         window.addEventListener('message', receiveMessageFromMainApp);
 
         navigator.serviceWorker
-          .register('/repl/sw.js', {
+          .register('/repl/repl-sw.js', {
             scope: '/repl/',
           })
           .then(

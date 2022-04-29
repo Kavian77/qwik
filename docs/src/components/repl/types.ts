@@ -1,4 +1,9 @@
-import type { Diagnostic, MinifyMode, QwikRollupPluginOptions } from '@builder.io/qwik/optimizer';
+import type {
+  Diagnostic,
+  MinifyMode,
+  QwikRollupPluginOptions,
+  SymbolsEntryMap,
+} from '@builder.io/qwik/optimizer';
 import type { NoSerialize } from '@builder.io/qwik';
 export interface ReplInputOptions extends Omit<QwikRollupPluginOptions, 'srcDir'> {
   srcInputs: ReplModuleInput[];
@@ -40,12 +45,18 @@ export interface ReplModuleOutput {
   size: string;
 }
 
+export interface ReplMessageEvent {
+  type: 'update';
+  version: string;
+  options: ReplInputOptions;
+}
+
 export interface ReplResult {
   type: 'result';
-  appHtml: string;
   outputHtml: string;
   clientModules: ReplModuleOutput[];
   ssrModules: ReplModuleOutput[];
+  symbolsEntryMap: SymbolsEntryMap | null;
   diagnostics: Diagnostic[];
   qwikloader: string;
   docElementAttributes: ReplResultAttributes;

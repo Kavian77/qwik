@@ -37,7 +37,7 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
       qwikPlugin.log(`vite config(), command: ${viteEnv.command}, env.mode: ${viteEnv.mode}`);
 
       isClientOnly = viteEnv.command === 'serve' && viteEnv.mode !== 'ssr';
- 
+
       const pluginOpts: QwikPluginOptions = {
         debug: qwikViteOpts.debug,
         isDevBuild: viteEnv.command === 'serve',
@@ -68,6 +68,19 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
         );
       }
 
+      let assetFileNames = 'build/q-[hash].[ext]';
+      let entryFileNames = 'build/q-[hash].js';
+      let chunkFileNames = 'build/q-[hash].js';
+      if (opts.buildMode === 'ssr') {
+        assetFileNames = '[name].[ext]';
+        entryFileNames = '[name].js';
+        chunkFileNames = '[name].js';
+      } else if (opts.isDevBuild) {
+        assetFileNames = 'build/[name].[ext]';
+        entryFileNames = 'build/[name].js';
+        chunkFileNames = 'build/[name].js';
+      }
+
       const updatedViteConfig: UserConfig = {
         esbuild: { include: /\.js$/ },
         optimizeDeps: {
@@ -77,8 +90,9 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
         build: {
           rollupOptions: {
             output: {
-              chunkFileNames: 'build/q-[hash].js',
-              assetFileNames: 'build/q-[hash].[ext]',
+              assetFileNames,
+              entryFileNames,
+              chunkFileNames,
             },
             onwarn: (warning, warn) => {
               if (

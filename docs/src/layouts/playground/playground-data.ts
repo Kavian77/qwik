@@ -1,9 +1,9 @@
-import type { TransformModuleInput } from '@builder.io/qwik/optimizer';
+import type { ReplModuleInput } from '../../components/repl/types';
 
 export interface PlaygroundApp {
   title: string;
   id: string;
-  inputs: TransformModuleInput[];
+  inputs: ReplModuleInput[];
 }
 
 // generated at build-time
