@@ -4,8 +4,8 @@ import type { ReplStore } from './types';
 
 export const ReplOutputPanel = ({ store }: ReplOutputPanelProps) => {
   return (
-    <>
-      <div class="output-tabs repl-tabs">
+    <div class="repl-panel repl-output-panel">
+      <div class="repl-tab-buttons">
         <ReplTabButton
           text="Document"
           isActive={store.selectedOutputPanel === 'app'}
@@ -14,29 +14,35 @@ export const ReplOutputPanel = ({ store }: ReplOutputPanelProps) => {
           }}
         />
 
-        <ReplTabButton
-          text="HTML"
-          isActive={store.selectedOutputPanel === 'outputHtml'}
-          onClick$={() => {
-            store.selectedOutputPanel = 'outputHtml';
-          }}
-        />
+        {store.enableHtmlOutput ? (
+          <ReplTabButton
+            text="HTML"
+            isActive={store.selectedOutputPanel === 'outputHtml'}
+            onClick$={() => {
+              store.selectedOutputPanel = 'outputHtml';
+            }}
+          />
+        ) : null}
 
-        <ReplTabButton
-          text="Client Modules"
-          isActive={store.selectedOutputPanel === 'clientModules'}
-          onClick$={() => {
-            store.selectedOutputPanel = 'clientModules';
-          }}
-        />
+        {store.enableClientOutput ? (
+          <ReplTabButton
+            text="Client Modules"
+            isActive={store.selectedOutputPanel === 'clientModules'}
+            onClick$={() => {
+              store.selectedOutputPanel = 'clientModules';
+            }}
+          />
+        ) : null}
 
-        <ReplTabButton
-          text="SSR Module"
-          isActive={store.selectedOutputPanel === 'serverModules'}
-          onClick$={() => {
-            store.selectedOutputPanel = 'serverModules';
-          }}
-        />
+        {store.enableSsrOutput ? (
+          <ReplTabButton
+            text="SSR Module"
+            isActive={store.selectedOutputPanel === 'serverModules'}
+            onClick$={() => {
+              store.selectedOutputPanel = 'serverModules';
+            }}
+          />
+        ) : null}
 
         {store.diagnostics.length > 0 ? (
           <ReplTabButton
@@ -50,58 +56,40 @@ export const ReplOutputPanel = ({ store }: ReplOutputPanelProps) => {
         ) : null}
       </div>
 
-      <div class="output-panel">
+      <div class="repl-tab">
         <div
           class={{
-            'active-output': store.selectedOutputPanel === 'app',
             'output-result': true,
             'output-app': true,
+            'output-app-active': store.selectedOutputPanel === 'app',
           }}
         >
           <iframe src={store.iframeUrl} />
         </div>
-        <div
-          class={{
-            'active-output': store.selectedOutputPanel === 'outputHtml',
-            'output-result': true,
-          }}
-        >
-          {store.selectedOutputPanel === 'outputHtml' ? (
+
+        {store.selectedOutputPanel === 'outputHtml' ? (
+          <div class="output-result">
             <pre class="output-html">{store.outputHtml}</pre>
-          ) : null}
-        </div>
-        <div
-          class={{
-            'active-output': store.selectedOutputPanel === 'clientModules',
-            'output-result': true,
-          }}
-        >
-          {store.selectedOutputPanel === 'clientModules' ? (
-            <ReplOutputModles buildPath="/build/" outputs={store.clientModules} />
-          ) : null}
-        </div>
-        <div
-          class={{
-            'active-output': store.selectedOutputPanel === 'serverModules',
-            'output-result': true,
-          }}
-        >
-          {store.selectedOutputPanel === 'serverModules' ? (
-            <ReplOutputModles buildPath="/server/" outputs={store.ssrModules} />
-          ) : null}
-        </div>
-        <div
-          class={{
-            'active-output': store.selectedOutputPanel === 'diagnostics',
-            'output-result': true,
-          }}
-        >
-          {store.diagnostics.map((d) => (
-            <p>{d.message}</p>
-          ))}
-        </div>
+          </div>
+        ) : null}
+
+        {store.selectedOutputPanel === 'clientModules' ? (
+          <ReplOutputModles buildPath="/build/" outputs={store.clientModules} />
+        ) : null}
+
+        {store.selectedOutputPanel === 'serverModules' ? (
+          <ReplOutputModles buildPath="/server/" outputs={store.ssrModules} />
+        ) : null}
+
+        {store.selectedOutputPanel === 'diagnostics' ? (
+          <div class="output-result output-diagnostics">
+            {store.diagnostics.map((d) => (
+              <p>{d.message}</p>
+            ))}
+          </div>
+        ) : null}
       </div>
-    </>
+    </div>
   );
 };
 

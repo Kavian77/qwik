@@ -37,7 +37,7 @@ export function qwikVite(qwikViteOpts: QwikVitePluginOptions = {}): any {
       qwikPlugin.log(`vite config(), command: ${viteEnv.command}, env.mode: ${viteEnv.mode}`);
 
       isClientOnly = viteEnv.command === 'serve' && viteEnv.mode !== 'ssr';
-
+ 
       const pluginOpts: QwikPluginOptions = {
         debug: qwikViteOpts.debug,
         isDevBuild: viteEnv.command === 'serve',

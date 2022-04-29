@@ -7,13 +7,19 @@
 
 .tutorial .repl {
   display: grid;
-  grid-template-rows: var(--repl-tab-height) 1fr var(--repl-tab-height) 1fr;
+  grid-template-rows: 1fr 1fr;
   grid-template-areas:
-    'repl-input-tabs'
     'repl-input-panel'
-    'repl-output-tabs'
     'repl-output-panel';
   height: calc(100vh - var(--header-height) - var(--repl-tab-height));
+}
+
+.tutorial .repl .repl-detail-panel {
+  display: none;
+}
+
+.tutorial .repl-input-panel .repl-tab-button-close {
+  display: none;
 }
 
 .tutorial-repl-footer {
@@ -24,16 +30,16 @@
 .tutorial main {
   display: grid;
   grid-template-columns: minmax(450px, 33%) auto;
-  grid-template-areas: 'content-panel repl-panel';
+  grid-template-areas: 'tutorial-content-panel tutorial-repl-panel';
   height: 100%;
 }
 
-.repl-panel {
-  grid-area: repl-panel;
+.tutorial-repl-panel {
+  grid-area: tutorial-repl-panel;
 }
 
-.content-panel {
-  grid-area: content-panel;
+.tutorial-content-panel {
+  grid-area: tutorial-content-panel;
   position: relative;
 
   background-color: #eee;
@@ -86,7 +92,7 @@
 
 .content-footer {
   grid-area: content-footer;
-  padding: 10px 15px;
+  padding: 8px 15px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   background-color: var(--repl-tab-bg-color);

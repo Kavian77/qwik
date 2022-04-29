@@ -3,8 +3,8 @@ import { qwikVite, TransformModuleInput } from '@builder.io/qwik/optimizer';
 import { resolve, join, basename } from 'path';
 import { qwest } from './qwest/dist/vite/index.mjs';
 import { partytownVite } from '@builder.io/partytown/utils';
-import { readdirSync, readFileSync, statSync } from 'fs';
-import type { TutorialSection } from './src/layouts/tutorial/tutorial-data';
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
+import type { TutorialApp, TutorialSection } from './src/layouts/tutorial/tutorial-data';
 import type { PlaygroundApp } from './src/layouts/playground/playground-data';
 import { PluginContext } from 'rollup';
 
@@ -49,8 +49,7 @@ function playgroundData(pagesDir: string): Plugin {
         const appDir = join(playgroundDir, menuApp.id);
 
         const app: PlaygroundApp = {
-          id: menuApp.id,
-          title: menuApp.title,
+          ...menuApp,
           inputs: readdirSync(appDir).map((fileName) => {
             const filePath = join(appDir, fileName);
             const input: TransformModuleInput = {
@@ -92,63 +91,90 @@ function tutorialData(pagesDir: string): Plugin {
   const tutorialMenuSrc = readFileSync(join(tutorialDir, 'tutorial-menu.json'), 'utf-8');
 
   const loadTutorialData = async (ctx: PluginContext) => {
-    const data: TutorialSection[] = JSON.parse(tutorialMenuSrc);
+    const tutorialSections: TutorialSection[] = [];
+    const dataSections: TutorialSection[] = JSON.parse(tutorialMenuSrc);
     ctx.addWatchFile(tutorialMenuSrc);
 
-    const getTutorialApp = (sections: TutorialSection[], path: string): TutorialSection | null => {
-      if (sections) {
-        for (const t of sections) {
-          if (t.path === path) {
-            return t;
-          }
-          const c = getTutorialApp(t.items, path);
-          if (c) {
-            return c;
-          }
-        }
+    for (const dataSection of dataSections) {
+      const tutorialSectionDir = join(tutorialDir, dataSection.id);
+
+      if (!existsSync(tutorialSectionDir)) {
+        throw new Error(`Tutorial section "${tutorialSectionDir}" doesn't exist`);
       }
-      return null;
-    };
 
-    const readAppDir = (dir: string, id: string) => {
-      const childItems = readdirSync(dir);
-      childItems.map((childItem) => {
-        const childPath = join(dir, childItem);
-        if (childItem === 'app') {
-          readAppInputs(childPath, id);
-        } else {
-          const s = statSync(childPath);
-          if (s.isDirectory()) {
-            readAppDir(childPath, `${id}/${childItem}`.trim());
-          }
+      const s = statSync(tutorialSectionDir);
+      if (!s.isDirectory()) {
+        throw new Error(`Tutorial section "${tutorialSectionDir}" is not a directory`);
+      }
+
+      const tutorialSection: TutorialSection = {
+        ...dataSection,
+        tutorials: [],
+      };
+
+      for (const dataTutorial of dataSection.tutorials) {
+        const tutorialAppDir = join(tutorialSectionDir, dataTutorial.id);
+        if (!existsSync(tutorialAppDir)) {
+          throw new Error(`Tutorial app "${tutorialAppDir}" doesn't exist`);
         }
-      });
-    };
 
-    const readAppInputs = (dir: string, path: string) => {
-      const app = getTutorialApp(data, path);
-      if (app) {
-        app.inputs = readdirSync(dir).map((fileName) => {
-          const filePath = join(dir, fileName);
-          const input: TransformModuleInput = {
-            path: '/' + fileName,
-            code: readFileSync(filePath, 'utf-8'),
-          };
-          ctx.addWatchFile(filePath);
-          return input;
-        });
+        const s = statSync(tutorialAppDir);
+        if (!s.isDirectory()) {
+          throw new Error(`Tutorial app "${tutorialAppDir}" is not a directory`);
+        }
+
+        const readAppInputs = (appType: 'problem' | 'solution') => {
+          const appDir = join(tutorialAppDir, appType);
+
+          if (!existsSync(appDir)) {
+            throw new Error(`Tutorial "${appType}" dir "${appDir}" doesn't exist`);
+          }
+
+          const s = statSync(tutorialSectionDir);
+          if (!s.isDirectory()) {
+            throw new Error(`Tutorial "${appType}" dir "${appDir}" is not a directory`);
+          }
+
+          const inputs = readdirSync(appDir)
+            .map((fileName) => {
+              const filePath = join(appDir, fileName);
+              const s = statSync(filePath);
+              if (s.isFile()) {
+                const input: TransformModuleInput = {
+                  path: '/' + fileName,
+                  code: readFileSync(filePath, 'utf-8'),
+                };
+                ctx.addWatchFile(filePath);
+                return input;
+              } else {
+                return null;
+              }
+            })
+            .filter((i) => !!i);
+          if (inputs.length === 0) {
+            throw new Error(`Tutorial "${appType}" dir "${appDir}" does not have any valid files.`);
+          }
+          return inputs;
+        };
+
+        const tutorial: TutorialApp = {
+          ...dataTutorial,
+          id: `${tutorialSection.id}/${dataTutorial.id}`,
+          problemInputs: readAppInputs('problem'),
+          solutionInputs: readAppInputs('solution'),
+        };
+
+        tutorialSection.tutorials.push(tutorial);
+      }
+
+      if (tutorialSection.tutorials.length > 0) {
+        tutorialSections.push(tutorialSection);
       } else {
-        console.error(`Tutorial app not found in the tutorial-menu.json: ${path}`);
+        throw new Error(`Tutorial section "${tutorialSection.id}" has no tutorials`);
       }
-    };
-
-    try {
-      readAppDir(tutorialDir, '/tutorial');
-    } catch (e) {
-      console.error(e);
     }
 
-    return data;
+    return tutorialSections;
   };
 
   return {

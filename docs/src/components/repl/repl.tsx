@@ -4,13 +4,15 @@ import {
   noSerialize,
   useScopedStyles$,
   useStore,
+  useWatch$,
   useWatchEffect$,
 } from '@builder.io/qwik';
 import { isBrowser } from '@builder.io/qwik/build';
 import { ReplInputPanel } from './repl-input-panel';
 import { ReplOutputPanel } from './repl-output-panel';
 import styles from './repl.css?inline';
-import type { ReplInputOptions, ReplProps, ReplStore, ReplResult } from './types';
+import type { ReplInputOptions, ReplStore, ReplResult, ReplModuleInput } from './types';
+import { ReplDetailPanel } from './repl-detail-panel';
 
 export const Repl = component$(async (props: ReplProps) => {
   useScopedStyles$(styles);
@@ -21,15 +23,18 @@ export const Repl = component$(async (props: ReplProps) => {
     clientModules: [],
     ssrModules: [],
     diagnostics: [],
+    enableClientOutput: props.enableClientOutput !== false,
+    enableHtmlOutput: props.enableHtmlOutput !== false,
+    enableSsrOutput: props.enableSsrOutput !== false,
     selectedInputPath: '',
     selectedOutputPanel: 'app',
+    selectedOutputDetail: 'options',
     selectedClientModule: '',
     selectedSsrModule: '',
     minify: 'none',
     entryStrategy: 'single',
     ssrBuild: true,
     debug: false,
-    enableFileDelete: props.enableFileDelete,
     iframeUrl: 'about:blank',
     iframeWindow: null,
     version: props.version || '0.0.19-0',
@@ -60,6 +65,7 @@ export const Repl = component$(async (props: ReplProps) => {
         store.selectedInputPath = '';
       }
     }
+    postReplInputUpdate();
   };
 
   const postReplInputUpdate = () => {
@@ -127,6 +133,7 @@ export const Repl = component$(async (props: ReplProps) => {
   };
 
   useWatchEffect$(() => {
+    // is this right for is browser only?
     if (isBrowser) {
       store.iframeUrl = '/repl/index.html';
       if (location.hostname === 'qwik.builder.io') {
@@ -134,14 +141,33 @@ export const Repl = component$(async (props: ReplProps) => {
         store.iframeUrl = 'https://qwik-docs.pages.dev' + store.iframeUrl;
       }
 
+      // how do I not use window event listener here?
       window.addEventListener('message', onMessageFromIframe);
     }
+  });
+
+  useWatch$((track) => {
+    track(store, 'entryStrategy');
+    track(store, 'minify');
+    track(store, 'version');
+
+    postReplInputUpdate();
   });
 
   return (
     <Host class="repl">
       <ReplInputPanel store={store} onInputChange={onInputChange} onInputDelete={onInputDelete} />
       <ReplOutputPanel store={store} />
+      <ReplDetailPanel store={store} />
     </Host>
   );
 });
+
+export interface ReplProps {
+  inputs?: ReplModuleInput[];
+  selectedInputPath?: string;
+  enableHtmlOutput?: boolean;
+  enableClientOutput?: boolean;
+  enableSsrOutput?: boolean;
+  version?: string;
+}

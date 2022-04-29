@@ -718,6 +718,7 @@ globalThis.qwikOptimizer = function(module) {
       outClientDir: null,
       outServerDir: null,
       isDevBuild: true,
+      forceFullBuild: false,
       buildMode: "client",
       entryStrategy: null,
       minify: null,
@@ -744,7 +745,8 @@ globalThis.qwikOptimizer = function(module) {
         type: "hook"
       } : opts.entryStrategy = {
         type: "single"
-      });
+      }); 
+      opts.forceFullBuild = !!updatedOpts.forceFullBuild || "hook" !== opts.entryStrategy.type;
       updatedOpts.minify && (opts.minify = updatedOpts.minify);
       "minify" !== opts.minify && "none" !== opts.minify && "simplify" !== opts.minify && (opts.isDevBuild ? opts.minify = "none" : opts.minify = "minify");
       "string" === typeof updatedOpts.rootDir && (opts.rootDir = updatedOpts.rootDir);
@@ -798,10 +800,8 @@ globalThis.qwikOptimizer = function(module) {
       }
     };
     const buildStart = async () => {
-      var _a;
-      const isFullBuild = "hook" !== (null == (_a = opts.entryStrategy) ? void 0 : _a.type);
-      log("buildStart()", opts.buildMode, isFullBuild ? "full build" : "isolated build");
-      if (isFullBuild) {
+      log("buildStart()", opts.buildMode, opts.forceFullBuild ? "full build" : "isolated build");
+      if (opts.forceFullBuild) {
         const optimizer2 = await getOptimizer();
         outputCount = 0;
         let rootDir = "/";
@@ -878,7 +878,7 @@ globalThis.qwikOptimizer = function(module) {
           code: getBuildTimeModule(opts)
         };
       }
-      "hook" !== opts.entryStrategy.type && (id2 = forceJSExtension(optimizer2.sys.path, id2));
+      opts.forceFullBuild && (id2 = forceJSExtension(optimizer2.sys.path, id2));
       const transformedModule = transformedOutputs.get(id2);
       if (transformedModule) {
         log("load()", "Found", id2);
@@ -891,7 +891,7 @@ globalThis.qwikOptimizer = function(module) {
       return null;
     };
     const transform = async (code, id2) => {
-      if ("hook" !== opts.entryStrategy.type) {
+      if (opts.forceFullBuild) {
         return null;
       }
       const pregenerated = transformedOutputs.get(id2);
@@ -1126,7 +1126,6 @@ globalThis.qwikOptimizer = function(module) {
             });
           }
           const symbolsEntryMap = await outputAnalyzer.generateSymbolsEntryMap();
-          
           "function" === typeof opts.symbolsOutput && await opts.symbolsOutput(symbolsEntryMap);
           this.emitFile({
             type: "asset",

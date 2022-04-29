@@ -51,6 +51,7 @@ const bundleClient = async (options, result) => {
     entryStrategy: options.entryStrategy,
     minify: options.minify,
     sourceMaps: false,
+    forceFullBuild: true,
     symbolsOutput: (s) => {
       result.symbolsEntryMap = s;
     },
@@ -62,7 +63,11 @@ const bundleClient = async (options, result) => {
   const rollupInputOpts = {
     input: '/app.tsx',
     cache: ctx.rollupCache,
-    plugins: [self.qwikOptimizer.qwikRollup(qwikRollupPluginOpts), replResolver(options, 'client')],
+    plugins: [
+      self.qwikOptimizer.qwikRollup(qwikRollupPluginOpts),
+      replResolver(options, 'client'),
+      replTerser(qwikRollupPluginOpts),
+    ],
     onwarn(warning) {
       result.diagnostics.push({ message: warning.message });
     },
@@ -74,8 +79,9 @@ const bundleClient = async (options, result) => {
 
   const generated = await bundle.generate({});
 
-  console.log(generated.output)
-  result.clientModules = generated.output.map(getOutput);
+  result.clientModules = generated.output.map(getOutput).filter((f) => {
+    return !f.path.endsWith('app.js') && !f.path.endsWith('symbols-manifest.json');
+  });
 
   console.timeEnd(`Bundle client`);
 };
@@ -88,10 +94,10 @@ const bundleSSR = async (options, result) => {
     isDevBuild: true,
     debug: options.debug,
     srcInputs: options.srcInputs,
-    entryStrategy: options.entryStrategy,
+    entryStrategy: { type: 'single'},
     minify: options.minify,
     sourceMaps: false,
-    symbolsInput: result.symbolsEntryMap
+    symbolsInput: result.symbolsEntryMap,
   };
 
   const rollupInputOpts = {
@@ -133,8 +139,34 @@ const getOutput = (o) => {
   return f;
 };
 
+const replTerser = (qwikRollupPluginOpts) => {
+  if (qwikRollupPluginOpts.minify !== 'minify') {
+    return {};
+  }
+
+  return {
+    name: 'repl-terser',
+    async generateBundle(_, bundle) {
+      for (const fileName in bundle) {
+        const chunk = bundle[fileName];
+        if (chunk.type === 'chunk') {
+          const result = await self.Terser.minify(chunk.code, TERSER_OPTIONS);
+          chunk.code = result.code;
+        }
+      }
+    },
+  };
+};
+
+const TERSER_OPTIONS = {
+  ecma: 2020,
+  module: true,
+  toplevel: true,
+};
+
 const replResolver = (options, buildMode) => {
   return {
+    name: 'repl-resolver',
     resolveId(id, importer) {
       if (!importer) {
         return id;

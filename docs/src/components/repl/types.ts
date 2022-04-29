@@ -1,40 +1,36 @@
-import type {
-  Diagnostic,
-  MinifyMode,
-  QwikRollupPluginOptions,
-  TransformModuleInput,
-} from '@builder.io/qwik/optimizer';
-import type { NoSerialize } from '../../../../dist-dev/@builder.io-qwik/core';
-
-export interface ReplProps {
-  inputs?: TransformModuleInput[];
-  selectedInputPath?: string;
-  enableFileDelete?: boolean;
-  version?: string;
-}
-
+import type { Diagnostic, MinifyMode, QwikRollupPluginOptions } from '@builder.io/qwik/optimizer';
+import type { NoSerialize } from '@builder.io/qwik';
 export interface ReplInputOptions extends Omit<QwikRollupPluginOptions, 'srcDir'> {
-  srcInputs: TransformModuleInput[];
+  srcInputs: ReplModuleInput[];
 }
 
 export interface ReplStore {
-  inputs: TransformModuleInput[];
+  inputs: ReplModuleInput[];
   outputHtml: string;
   clientModules: ReplModuleOutput[];
   ssrModules: ReplModuleOutput[];
   diagnostics: Diagnostic[];
   selectedInputPath: string;
   selectedOutputPanel: OutputPanel;
+  selectedOutputDetail: OutputDetail;
   selectedClientModule: string;
   selectedSsrModule: string;
+  enableHtmlOutput: boolean;
+  enableClientOutput: boolean;
+  enableSsrOutput: boolean;
   minify: MinifyMode;
   ssrBuild: boolean;
   entryStrategy: string;
   debug: boolean;
-  enableFileDelete?: boolean;
   iframeUrl: string;
   iframeWindow: NoSerialize<MessageEventSource> | null;
   version: string;
+}
+
+export interface ReplModuleInput {
+  path: string;
+  code: string;
+  hidden?: boolean;
 }
 
 export interface ReplModuleOutput {
@@ -63,3 +59,5 @@ export interface ReplResultAttributes {
 }
 
 export type OutputPanel = 'app' | 'outputHtml' | 'clientModules' | 'serverModules' | 'diagnostics';
+
+export type OutputDetail = 'options' | 'network' | 'usage';

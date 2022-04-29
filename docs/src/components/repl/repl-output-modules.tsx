@@ -2,7 +2,7 @@ import type { ReplModuleOutput } from './types';
 
 export const ReplOutputModles = ({ outputs, buildPath }: ReplOutputModulesProps) => {
   return (
-    <div class="output-modules">
+    <div class="output-result output-modules">
       <div class="file-tree">
         <div class="file-tree-header">{buildPath}</div>
         <div class="file-tree-items">

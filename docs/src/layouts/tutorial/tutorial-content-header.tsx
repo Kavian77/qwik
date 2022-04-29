@@ -1,7 +1,7 @@
 import { useLocation } from '../../utils/useLocation';
-import tutorial, { TutorialSection } from './tutorial-data';
+import tutorialSections, { TutorialApp } from './tutorial-data';
 
-export const TutorialContentHeader = ({ currentItem }: { currentItem: TutorialSection }) => {
+export const TutorialContentHeader = ({ currentTutorial }: { currentTutorial: TutorialApp }) => {
   const loc = useLocation();
 
   return (
@@ -15,26 +15,26 @@ export const TutorialContentHeader = ({ currentItem }: { currentItem: TutorialSe
           stroke-linecap="round"
         />
       </svg>
+
       <select
         onChange$={(_, elm: any) => {
           if (loc.pathname !== elm.value) {
-            loc.href = elm.value;
+            loc.href = `/tutorial/${elm.value}`;
           }
         }}
       >
-        {tutorial.map((m) => (
-          <optgroup label={m.title}>
-            {m.items
-              ? m.items.map((i) => (
-                  <option selected={i.path === currentItem.path} value={i.path}>
-                    {i.title}
-                  </option>
-                ))
-              : null}
+        {tutorialSections.map((s) => (
+          <optgroup label={s.title}>
+            {s.tutorials.map((t) => (
+              <option selected={t.id === currentTutorial.id} value={t.id}>
+                {t.title}
+              </option>
+            ))}
           </optgroup>
         ))}
       </select>
-      <h1>{currentItem.title}</h1>
+
+      <h1>{currentTutorial.title}</h1>
     </div>
   );
 };

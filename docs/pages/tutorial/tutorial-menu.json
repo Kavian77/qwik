@@ -1,23 +1,28 @@
 [
   {
+    "id": "introduction",
     "title": "Introduction",
-    "items": [
+    "tutorials": [
       {
+        "id": "basics",
         "title": "Basics",
-        "path": "/tutorial/introduction/basics"
+        "enableHtmlOutput": false,
+        "enableClientOutput": false,
+        "enableSsrOutput": false
       },
       {
-        "title": "Lazy Loading",
-        "path": "/tutorial/introduction/lazy-loading"
+        "id": "lazy-loading",
+        "title": "Lazy Loading"
       }
     ]
   },
   {
+    "id": "reactivity",
     "title": "Reactivity",
-    "items": [
+    "tutorials": [
       {
-        "title": "Assignments",
-        "path": "/tutorial/reactivity/assignments"
+        "id": "assignments",
+        "title": "Assignments"
       }
     ]
   }

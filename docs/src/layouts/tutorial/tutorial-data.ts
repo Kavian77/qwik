@@ -1,10 +1,19 @@
 import type { TransformModuleInput } from '@builder.io/qwik/optimizer';
 
 export interface TutorialSection {
+  id: string;
   title: string;
-  items?: TutorialSection[];
-  path?: string;
-  inputs?: TransformModuleInput[];
+  tutorials: TutorialApp[];
+}
+
+export interface TutorialApp {
+  id: string;
+  title: string;
+  problemInputs: TransformModuleInput[];
+  solutionInputs: TransformModuleInput[];
+  enableHtmlOutput?: boolean;
+  enableClientOutput?: boolean;
+  enableSsrOutput?: boolean;
 }
 
 // generated at build-time
